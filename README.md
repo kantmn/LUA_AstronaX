@@ -12,6 +12,7 @@ For an older version please use this Link https://mega.nz/#F!CMMAXICB!uQ_Ma9DWCa
 
 In the End the extracted AstronaX folder should be listed as here C:/Program Files/World of Warcraft/Interface/Addons/AstronaX
 
+Installation Guide
 -----------------------------------------------------------------------------------------------------------------------------
     Exit World of Warcraft completely
     Download the addon
@@ -37,6 +38,7 @@ In the End the extracted AstronaX folder should be listed as here C:/Program Fil
         If button is there: make sure all the addons you installed are listed and make sure they are are loaded.
         If the button is NOT there: means you did not install the addons properly. Look at the above screenshots. Try repeating the steps or getting someone who knows more about computers than you do to help.
 
+Installations Anleitung
 -----------------------------------------------------------------------------------------------------------------------------
     World of Warcraft vollständig beenden
     Das Addon herunterladen
@@ -61,3 +63,52 @@ In the End the extracted AstronaX folder should be listed as here C:/Program Fil
         Auf dem Bildschirm Zeichenauswahl suchen Sie in der linken unteren Ecke nach der Schaltfläche "Addons".
         Falls die Schaltfläche vorhanden ist: Vergewissern Sie sich, dass alle von Ihnen installierten Addons aufgelistet sind und dass sie geladen sind.
         Wenn die Schaltfläche NICHT vorhanden ist: bedeutet, dass Sie die Addons nicht richtig installiert haben. Schauen Sie sich die obigen Screenshots an. Versuchen Sie, die Schritte zu wiederholen oder jemanden, der sich besser mit Computern auskennt als Sie selbst, um zu helfen.
+
+-----------------------------------------------------------------------------------------------------------------------------
+Using the Addon with multiple Accounts but only one Settings folder
+-----------------------------------------------------------------------------------------------------------------------------
+For Windows (Vista or later)
+-------------------------
+For this to work, the command prompt (also known as cmd) must be started as admin. To do this, go to Start->Programs->Accessories and activate "Run as administrator" in the properties:
+	
+<WOWDIR> stands for your WoW installation folder, by default this should be C:\Programs\World Of Warcraft\.
+<ACCOUNT1> and <ACCOUNT2> are your account names, also known as LoginName
+
+cd <WOWDIR>/WTF/Account
+mklink /d "<ACCOUNT2>" "<ACCOUNT1>"
+mklink /d "<ACCOUNT3>" "<ACCOUNT1>"
+
+What do these 3 lines
+-------------------------
+We use the ACCOUNT1 folder as a starting point. This means that we configure or perhaps even have already stored all the settings in the ACCOUNT1 and now want to use this with the ACCOUNT2.
+cd... we change to the directory of WoW
+MKlNK We create a virtual folder for the 2nd account, note that the folder must NOT exist before, rename the old folder alternive.
+the 3rd line is optional for people with more than two accounts, you can do this for any other account.
+
+What are the advantages
+-------------------------
+As already mentioned, there is then only one real folder, the one from Account1. The folders for Account2 and 3 etc, link only to the folder of the 1st account. Addons that save their settings on the account side, not per character, share the settings across all accounts. This also applies to Global Macros, which are available for both accounts. If you edit a macro or delete it in the Global Macro tab, this applies to all accounts we have linked to it.
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+Für Windows (ab Vista)
+-------------------------
+Damit dies funktioniert, muss die Eingabeaufforderung (auch als cmd bekannt) als Admin gestartet werden. Dazu geht ihr über Start->Programme->Zubehör auf die Eingabeaufforderung und aktiviert in den Eigenschaften "Als Administrator ausführen":
+	
+<WOWDIR> steht für euren WoW Installations Ordner, standartmäßig müsste das C:\Programme\World Of Warcraft\ sein.
+<ACCOUNT1> und <ACCOUNT2> stehen für eure Accountnamen, auch als LoginName bekannt
+
+cd <WOWDIR>/WTF/Account
+mklink /d "<ACCOUNT2>" "<ACCOUNT1>"
+mklink /d "<ACCOUNT3>" "<ACCOUNT1>"
+
+Was machen diese 3 Zeilen
+-------------------------
+Wir verwenden den Ordner des ACCOUNT1 als Ausgangspunkt. Das heißt wir konfigurieren oder haben sogar vielleicht schon alle Einstellungen im ACCOUNT1 hinterlegt und wollen dies nun mit dem ACCOUNT2 nutzen.
+cd... wir wechseln in das Verzeichnis von WoW
+mklink... Wir erstellen einen virtuellen Ordnern für den 2. Account, beachtet dass der Ordner vorher NICHT existieren darf, benennt den alten Ordner alternive um.
+die 3. Zeile ist optional für leute mit mehr als zwei Accounts, man kann das natürlich auch für jeden weiteren Account machen.
+
+Was sind die Vorteile
+-------------------------
+Wie schon erwähnt, gibt es dann nur noch einen einzigen echten Ordner, den von Account1. Die Ordner für Account2 und 3 usw, verlinken nur auf den Ordner des 1. Accounts. Damit teilen sich Addons die Ihre Einstellungen Accountseitig, also nicht pro Charakter, speichern, die Einstellungen über alle Accounts hinweg. Dies gilt auch für Globale Macros, diese sind dann bei beiden Accounts verfügbar, editiert ihr ein Macro oder löscht es im Globalen Macro Reiter, dann gilt das für alle Accounts die wir hiermit verlinkt haben.
