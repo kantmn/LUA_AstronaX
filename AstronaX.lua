@@ -1949,7 +1949,7 @@ function AstronaX:UpdateLootMethod()
         --print(addon_color.."Loot Methode nicht geaendert weil im Kampf")
     else
       if GetLootMethod() ~= "group" and GetLootMethod() ~= "needbeforegreed"  then
-        if IsLeadOrAssist() then
+        if IsLead() then
           SetLootMethod("needbeforegreed", 2);
           print(addon_color..l["Loot Method changed to %s."]:format(addon_highlight.."Need4Greed"..addon_color))
         end

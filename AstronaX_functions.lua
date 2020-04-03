@@ -214,6 +214,20 @@ function isInGroup()
 	return type
 end
 
+function IsLead()
+  if
+  (
+    isParty() and IsPartyLeader("player")
+  ) or (
+    GetNumRaidMembers() > 1 and IsRaidLeader("player") 
+  )
+  then
+    return true
+  else
+    return false
+  end
+end
+
 function IsLeadOrAssist()
   if (
     isParty() and IsPartyLeader("player")
