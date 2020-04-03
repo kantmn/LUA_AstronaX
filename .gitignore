@@ -1,5 +1,3 @@
-*.png
-
 # Compiled Lua sources
 luac.out
 
@@ -41,3 +39,12 @@ luac.out
 *.x86_64
 *.hex
 
+
+AstronaX_FuBar_Tooltip.png
+AstronaX_GUI_Settings_AutoX.png
+AstronaX_GUI_Settings_Infos.png
+AstronaX_GUI_Settings_Loot.png
+AstronaX_Installation_Path.png
+AstronaX_Raid_ApplicationWhisper.png
+AstronaX_Raid_MemberSearch_Page1.png
+AstronaX_Raid_MemberSearch_Page2.png
