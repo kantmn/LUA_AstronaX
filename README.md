@@ -6,9 +6,9 @@ Here are some of the features AstronaX currently contains
     Gui for easy raid apply 
     Gui for simple raid search in world channel
     Auto Tracking of Daily Heroics and Weekly Raid Quest as well as Weekly 1KW PvP Weekly
-    
 Download the latest Version go to https://mega.nz/folder/CMMAXICB#uQ_Ma9DWCaXFfk9WzWZILA/file/vA1A0aqC
 For an older version please use this Link https://mega.nz/#F!CMMAXICB!uQ_Ma9DWCaXFfk9WzWZILA
+<img src="https://raw.githubusercontent.com/kantmn/LUA_AstronaX/master/AstronaX_FuBar_Tooltip.png">
 
 In the End the extracted AstronaX folder should be listed as here C:/Program Files/World of Warcraft/Interface/Addons/AstronaX
 
