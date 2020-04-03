@@ -1,16 +1,23 @@
-AstronaX is a World of Warcraft Addon for Version 3.3.5a aka Wrath of the Lichking
-This is the current development Repo.
+AstronaX is a World of Warcraft Addon for Version 3.3.5a aka Wrath of the Lichking. This is the current development Repository.
+
+<a href="https://mega.nz/folder/CMMAXICB#uQ_Ma9DWCaXFfk9WzWZILA/file/vA1A0aqC">Download the latest Version here</a>, older versions can be <a href="https://mega.nz/#F!CMMAXICB!uQ_Ma9DWCaXFfk9WzWZILA">downloaded on MEGA</a>
 
 Here are some of the features AstronaX currently contains
-    Auto Track Character Stats + Class + Emblems + Gold + Honor + RaidIDs + TalentSpecs")
-    Gui for easy raid apply 
-    Gui for simple raid search in world channel
-    Auto Tracking of Daily Heroics and Weekly Raid Quest as well as Weekly 1KW PvP Weekly
-Download the latest Version go to https://mega.nz/folder/CMMAXICB#uQ_Ma9DWCaXFfk9WzWZILA/file/vA1A0aqC
-For an older version please use this Link https://mega.nz/#F!CMMAXICB!uQ_Ma9DWCaXFfk9WzWZILA
+Auto Track Character Stats + Class + Emblems + Gold + Honor + RaidIDs + TalentSpecs")
+Gui for easy raid apply 
+Gui for simple raid search in world channel
+Auto Tracking of Daily Heroics and Weekly Raid Quest as well as Weekly 1KW PvP Weekly
+
+
+
+
+
 <img src="https://raw.githubusercontent.com/kantmn/LUA_AstronaX/master/AstronaX_FuBar_Tooltip.png">
 
-In the End the extracted AstronaX folder should be listed as here C:/Program Files/World of Warcraft/Interface/Addons/AstronaX
+In the End the extracted AstronaX folder should be listed here
+<br>C:/Program Files/World of Warcraft/Interface/Addons/AstronaX
+<br>In my example screenshot i have installed WoW in the WoW 3.3.5a folder
+<br><img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_Installation_Path.png">
 
 Installation Guide
 -----------------------------------------------------------------------------------------------------------------------------
