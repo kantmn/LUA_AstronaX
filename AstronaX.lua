@@ -1473,11 +1473,11 @@ function AstronaX:CheckInviteRequest(unit, inviting)
     SendChatMessage(l["AutoInvite declined, i am no group leader and do not have invite permissions."],"WHISPER" ,COMMON ,unit);
     return
   elseif pending_inviter and pending_inviter == unit then
-    pending_inviter = nil
     print(addon_color..l["AutoInvite accepted."])
     if inviting == true and (not isInGroup(player) or IsLeadOrAssist() )  then
       -- wir laden ein weil jemand inviter gesetzt hat?
       InviteUnit(pending_inviter);
+      pending_inviter = nil
     else
       -- wir wurden eingeladen, weil vorheriger whisper?    
       AcceptGroup();
