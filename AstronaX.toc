@@ -1,6 +1,6 @@
 ## Interface: 30300
-## Title: AstronaX |cff00ff00 04.0214
-## Version: 04.0214
+## Title: AstronaX |cff00ff00 04.0312
+## Version: 04.0312
 ## Notes: Global Char Management for Emblems / Instances + Daily/Weekly Quests
 ## Author: AstronaX
 ## OptionalDeps: FuBar
