@@ -1807,9 +1807,13 @@ function AstronaX:AlertOnMissingBuff(spell,soundpath)
   if soundpath then
     PlaySoundFileAstronax(soundpath);
   end
-  print(red..">>> "..purple..spell..red.." not activ <<<");
-  UIErrorsFrame:AddMessage(">>> "..spell.." "..l["not"].." "..l["activ"].." <<<", 1.0, 0.0, 1.0, 53, 5);
-  last_sound_played[spell] = GetTime();
+  if (GetTime()-last_sound_played[spell]) >= (3 * sound_played_counter) then
+    sound_played_counter = sound_played_counter + 1
+    last_sound_played[spell] = GetTime();
+    
+    print(red..">>> "..purple..spell..red.." not activ <<<");
+    UIErrorsFrame:AddMessage(">>> "..spell.." "..l["not"].." "..l["activ"].." <<<", 1.0, 0.0, 1.0, 53, 5);
+  end
 end
 
 
