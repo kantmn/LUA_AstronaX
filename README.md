@@ -10,9 +10,54 @@ Here are some of the features AstronaX currently contains
 Download the latest Version go to https://mega.nz/folder/CMMAXICB#uQ_Ma9DWCaXFfk9WzWZILA/file/vA1A0aqC
 For an older version please use this Link https://mega.nz/#F!CMMAXICB!uQ_Ma9DWCaXFfk9WzWZILA
 
-To install extract the Archiv and move all files including the top folder AstronaX to your WoW Addon installation Path which is by default
-C:/Program Files/World of Warcraft/Interface/Addons/
-If the folders Interface or Addons do not extist, just create them.
+In the End the extracted AstronaX folder should be listed as here C:/Program Files/World of Warcraft/Interface/Addons/AstronaX
 
-In the End the extracted AstronaX folder should be listed as so.
-C:/Program Files/World of Warcraft/Interface/Addons/AstronaX
+-----------------------------------------------------------------------------------------------------------------------------
+    Exit World of Warcraft completely
+    Download the addon
+        Save the .zip/.rar files to Downloads / Desktop or where ever you want
+    Extract the file – commonly known as ‘unzipping’
+        Windows
+            Since Windows XP has a built in ZIP extractor. Double click on the file to open it, inside should be the file or folders needed.
+        Mac Users
+            StuffitExpander: Double click the archive to extract it to a folder in the current directory.
+    Verify your WoW Installation Path
+        That is where you are running WoW from and THAT is where you need to install your addons.
+    Extract the files/Folders
+        Open your World of Warcraft folder. (default is C:\Program Files\World of Warcraft\)
+        Go into the “Interface” folder.
+        Go into the “AddOns” folder.
+		Create Interface and Addons folder if they do not exist
+        Copy or extract all folders from the zip to the addons folder
+        The “Addons” folder should have the “AstronaX” folder in it.
+    Start World of Warcraft
+    Make sure AddOns are installed
+        Log in.
+        At the Character Select screen, look in lower left corner for the “addons” button.
+        If button is there: make sure all the addons you installed are listed and make sure they are are loaded.
+        If the button is NOT there: means you did not install the addons properly. Look at the above screenshots. Try repeating the steps or getting someone who knows more about computers than you do to help.
+
+-----------------------------------------------------------------------------------------------------------------------------
+    World of Warcraft vollständig beenden
+    Das Addon herunterladen
+        Speichern Sie die .zip/.rar-Dateien unter Downloads / Desktop oder wo immer Sie wollen
+    Entpacken der Datei - allgemein bekannt als 'Unzipping'.
+        Windows
+            Seit Windows XP gibt es einen eingebauten ZIP-Extraktor. Doppelklicken Sie auf die Datei, um sie zu öffnen, darin sollten sich die benötigte(n) Datei(en) befinden.
+        Mac-Benutzer
+            StuffitExpander: Doppelklicken Sie auf das Archiv, um es in einen Ordner im aktuellen Verzeichnis zu entpacken.
+    Überprüfen Sie Ihren WoW-Installationspfad
+        Von dort aus führen Sie WoW aus, und von dort aus müssen Sie Ihre Addons installieren.
+    Entpacken Sie die Dateien/Ordner
+        Öffnen Sie Ihren World of Warcraft-Ordner. (Standard ist C:\Programme\World of Warcraft\)
+        Gehen Sie in den Ordner "Interface".
+        Gehen Sie in den Ordner "AddOns".
+		Erstellen Sie den Ordner "Interface" und "AddOns", wenn sie nicht existieren.
+        Kopieren oder extrahieren Sie alle Ordner aus der Zip-Datei in den Addons-Ordner
+        Der Ordner "Addons" sollte den Ordner "AstronaX" enthalten.
+    World of Warcraft starten
+    Stellen Sie sicher, dass AddOns installiert sind
+        Loggen Sie sich ein.
+        Auf dem Bildschirm Zeichenauswahl suchen Sie in der linken unteren Ecke nach der Schaltfläche "Addons".
+        Falls die Schaltfläche vorhanden ist: Vergewissern Sie sich, dass alle von Ihnen installierten Addons aufgelistet sind und dass sie geladen sind.
+        Wenn die Schaltfläche NICHT vorhanden ist: bedeutet, dass Sie die Addons nicht richtig installiert haben. Schauen Sie sich die obigen Screenshots an. Versuchen Sie, die Schritte zu wiederholen oder jemanden, der sich besser mit Computern auskennt als Sie selbst, um zu helfen.
