@@ -17,7 +17,7 @@ Auto Tracking of Daily Heroics and Weekly Raid Quest as well as Weekly 1KW PvP W
 In the End the extracted AstronaX folder should be listed here
 <br>C:/Program Files/World of Warcraft/Interface/Addons/AstronaX
 <br>In my example screenshot i have installed WoW in the WoW 3.3.5a folder
-<br><img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_Installation_Path.png">
+<br><img src="https://raw.githubusercontent.com/kantmn/LUA_AstronaX/master/AstronaX_Installation_Path.png">
 
 Installation Guide
 -----------------------------------------------------------------------------------------------------------------------------
