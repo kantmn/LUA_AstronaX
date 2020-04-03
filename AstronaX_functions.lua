@@ -166,8 +166,10 @@ end
 function isRaid() 
   if GetNumRaidMembers() > 10 or isParty() then
     SetCVar("showLootSpam", 0)
+    print("Disabled Detailled Loot Rolls")
   else
     SetCVar("showLootSpam", 1)
+    print("Enabled Detailled Loot Rolls")
   end
   
   -- set viewdistance low if yes else to max
