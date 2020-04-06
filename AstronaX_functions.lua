@@ -164,7 +164,7 @@ function isChannelJoined(channelname)
 end
 
 function isRaid() 
-  if GetNumRaidMembers() <= 10 or isParty() then
+  if GetNumRaidMembers() <= 10 then
     SetCVar("showLootSpam", 1)
   else
     SetCVar("showLootSpam", 0)

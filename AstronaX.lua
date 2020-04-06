@@ -1202,7 +1202,7 @@ function AstronaX:UNIT_MANA()
       --self:GetReplenishmentReminder("Hymne der Hoffnung", 0.856)
       self:GetReplenishmentReminder(l["spell_Schattengeist"], 0.5)
     elseif GetClassName() == "SHAMAN" then
-      self:GetReplenishmentReminder(l["spell_TotemderManaflut"], 0.75)
+      self:GetReplenishmentReminder(l["spell_TotemderManaflut"], 0.66) --normal 0.75
     end
   end
 end
@@ -1796,9 +1796,6 @@ end
 function AstronaX:GetSpellUponTarget(spell,target,soundpath)
   local spell_found = self:CheckIfSpellIsPresent(spell,target);
   if UnitLevel("player") == maxLevel and UnitName(target) and UnitExists(target) and UnitIsDeadOrGhost(target) == nil and UnitUsingVehicle("player") ~= 1 then
-    if last_sound_played[spell] == nil then 
-      last_sound_played[spell] = GetTime() 
-    end 
     if spell_found == false then
       self:AlertOnMissingBuff(spell,soundpath)
     end
@@ -1806,6 +1803,9 @@ function AstronaX:GetSpellUponTarget(spell,target,soundpath)
 end
 
 function AstronaX:AlertOnMissingBuff(spell,soundpath)
+  if last_sound_played[spell] == nil then
+    last_sound_played[spell] = GetTime()
+  end
   if (GetTime()-last_sound_played[spell]) >= (3 * sound_played_counter) then
     sound_played_counter = sound_played_counter + 1
     last_sound_played[spell] = GetTime();
