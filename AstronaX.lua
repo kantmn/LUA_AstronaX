@@ -959,7 +959,7 @@ function AstronaX:ADDON_LOADED()
         AstronaXDB[player][function_array[k]] = 1
       end
     end
-    if not(isRaid()) then
+    if not(isRaid()) and GetCVar("farclip") ~= 400 then
       AstronaXDB.farclip = GetCVar("farclip");
     end
     addon_color = AstronaXDB.addon_color
@@ -1796,20 +1796,23 @@ end
 function AstronaX:GetSpellUponTarget(spell,target,soundpath)
   local spell_found = self:CheckIfSpellIsPresent(spell,target);
   if UnitLevel("player") == maxLevel and UnitName(target) and UnitExists(target) and UnitIsDeadOrGhost(target) == nil and UnitUsingVehicle("player") ~= 1 then
-    if last_sound_played[spell] == nil then last_sound_played[spell] = GetTime() end 
-    if spell_found == false and (GetTime()-last_sound_played[spell]) >= 3 then
+    if last_sound_played[spell] == nil then 
+      last_sound_played[spell] = GetTime() 
+    end 
+    if spell_found == false then
       self:AlertOnMissingBuff(spell,soundpath)
     end
   end
 end
 
 function AstronaX:AlertOnMissingBuff(spell,soundpath)
-  if soundpath then
-    PlaySoundFileAstronax(soundpath);
-  end
   if (GetTime()-last_sound_played[spell]) >= (3 * sound_played_counter) then
     sound_played_counter = sound_played_counter + 1
     last_sound_played[spell] = GetTime();
+
+    if soundpath then
+      PlaySoundFileAstronax(soundpath);
+    end
     
     print(red..">>> "..purple..spell..red.." not activ <<<");
     UIErrorsFrame:AddMessage(">>> "..spell.." "..l["not"].." "..l["activ"].." <<<", 1.0, 0.0, 1.0, 53, 5);
