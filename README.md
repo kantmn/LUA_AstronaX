@@ -1,6 +1,6 @@
 AstronaX is a World of Warcraft Addon for Version 3.3.5a aka Wrath of the Lichking. This is the current development Repository.
 
-<a href="https://mega.nz/folder/CMMAXICB#uQ_Ma9DWCaXFfk9WzWZILA/file/vA1A0aqC">Download the latest Version here</a>, older versions can be <a href="https://mega.nz/#F!CMMAXICB!uQ_Ma9DWCaXFfk9WzWZILA">downloaded on MEGA</a>
+<a href="https://mega.nz/file/rd8kxSDB#ELFypu5XKVkdEmZcL71KQ27r2UJDMzo5UOYav1oHxfU">Download the latest Version here</a>, older versions can be <a href="https://mega.nz/#F!CMMAXICB!uQ_Ma9DWCaXFfk9WzWZILA">downloaded on MEGA</a>
 
 Here are some of the features AstronaX currently contains
 Auto Track Character Stats + Class + Emblems + Gold + Honor + RaidIDs + TalentSpecs")
@@ -8,11 +8,17 @@ Gui for easy raid apply
 Gui for simple raid search in world channel
 Auto Tracking of Daily Heroics and Weekly Raid Quest as well as Weekly 1KW PvP Weekly
 
-
-
-
-
+Screenshot Section
+-----------------------------------------------------------------------------------------------------------------------------
 <img src="https://raw.githubusercontent.com/kantmn/LUA_AstronaX/master/AstronaX_FuBar_Tooltip.png">
+<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_GUI_Settings_AutoX.png">
+<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_GUI_Settings_Infos.png">
+<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_GUI_Settings_Loot.png">
+<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_Raid_ApplicationWhisper.png">
+<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_Raid_MemberSearch_Page1.png">
+<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_Raid_MemberSearch_Page2.png">
+
+
 
 In the End the extracted AstronaX folder should be listed here
 <br>C:/Program Files/World of Warcraft/Interface/Addons/AstronaX
