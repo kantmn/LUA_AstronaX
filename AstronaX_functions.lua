@@ -168,7 +168,6 @@ function isRaid()
     SetCVar("showLootSpam", 1)
   else
     SetCVar("showLootSpam", 0)
-    print("Disabled Detailled Loot Rolls")
   end
   
   -- set viewdistance low if yes else to max
