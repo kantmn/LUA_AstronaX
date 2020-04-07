@@ -1,6 +1,6 @@
 AstronaX is a World of Warcraft Addon for Version 3.3.5a aka Wrath of the Lichking. This is the current development Repository.
 
-<a href="https://mega.nz/file/qR80wKRb#bIRfyEfvO6Kogk8xtayl90PV5lA2z-6MMG5DQ3WJ57o">Download the latest Version here</a>, older versions can be <a href="https://mega.nz/#F!CMMAXICB!uQ_Ma9DWCaXFfk9WzWZILA">downloaded on MEGA</a>
+<a href="https://mega.nz/#F!CMMAXICB!uQ_Ma9DWCaXFfk9WzWZILA">Download the latest Version here</a>, older versions can also available.
 
 Here are some of the features AstronaX currently contains
 Auto Track Character Stats + Class + Emblems + Gold + Honor + RaidIDs + TalentSpecs")
