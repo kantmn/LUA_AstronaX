@@ -1785,6 +1785,7 @@ function AstronaX:CheckIfSpellIsPresent(spell,target)
       if UnitBuff(target,i) ~= nil then
         if string.match(UnitBuff(target,i), spell) then
           spell_found = true
+          last_sound_played[spell] = GetTime()
           return
         end
       end
@@ -1853,7 +1854,7 @@ function AstronaX:GetUnitAuraUpdates()
     self:GetSpellUponTarget("Erdschild","focus","Sound\\Interface\\LFG_Rewards.wav")
     
   elseif isInCombat() and isInGroup() and GetClassName() == "WARLOCK" then
-    self:GetSpellUponTarget("Rüstung","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
+    self:GetSpellUponTarget("rüstung","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
     if select(1,GetWeaponEnchantInfo()) == nil then
       self:AlertOnMissingBuff("WeaponBuff","Sound\\Interface\\Sound\\Interface\\ReadyCheck.wav")
     end
