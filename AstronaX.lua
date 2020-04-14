@@ -1939,7 +1939,7 @@ function AstronaX:UpdateLootMethod()
   if UnitIsEnemy("player","target") then
     --falls das target boss level hat
     if UnitLevel("target") == -1 and GetLootMethod() ~= "master" and GetGroupCount() > 10 then 
-        if IsLeadOrAssist() then
+        if IsLead() then
           SetLootMethod("master", player);
           print(addon_color..l["Loot Method changed to %s."]:format(addon_highlight.."Pluendermeister"..addon_color))
         end
@@ -1949,9 +1949,9 @@ function AstronaX:UpdateLootMethod()
       --"needbeforegreed"    Need before greed, round-robin for normal items, selective rolling for special ones.
       --"master"    Master looter, designated player distributes loot.
       --"personalloot"  Personal loot, any loot acquired is placed directly in bags. 
-    elseif isInCombat() or UnitLevel("target") == -1 or UnitLevel("target") == nil then
+    elseif UnitLevel("target") == -1 or UnitLevel("target") == nil then
         --print(addon_color.."Loot Methode nicht geaendert weil im Kampf")
-    else
+    elseif isInCombat() then
       if GetLootMethod() ~= "group" and GetLootMethod() ~= "needbeforegreed"  then
         if IsLead() then
           SetLootMethod("needbeforegreed", 2);
