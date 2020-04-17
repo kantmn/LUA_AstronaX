@@ -199,4 +199,9 @@ l:RegisterTranslations("enUS", function() return {
    ["Search"] = "Search",
    ["Trade Emblems"] = "Trade Emblems",
    ["%s used %s to interupt %s by %s"] = "%s used %s to interupt %s by %s",
+   ["SetDBMTimer"] = "Set DBM timer",
+   ["Ok"] = "Okay",
+   ["Pause"] = "Pause",
+   ["Pull"] = "Pull",
+   ["Readycheck"] = "Readycheck",
 } end)

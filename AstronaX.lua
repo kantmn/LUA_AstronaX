@@ -2117,8 +2117,16 @@ function AstronaX:OnMenuRequest(level, value)
 			'text', l["Apply"],
 			'arg1', self,
 			'func', "CreateRaidApplyGUI",
-			'closeWhenClicked', true
-		)
+			'closeWhenClicked', false
+    )
+    if IsLeadOrAssist() or true then
+      dewdrop:AddLine(
+        'text', l["SetDBMTimer"],
+        'arg1', self,
+        'func', "SetDBMTimer",
+        'closeWhenClicked', true
+      )
+    end
 		dewdrop:AddLine(
 			'text', l["Raid Member Search"],
 			'arg1', self,
@@ -2684,6 +2692,61 @@ function AstronaX:CreateRaidApplyGUI( class, gearscore, talent_specname )
   end
 end
 
+function AstronaX:SetDBMTimer()
+  if isApplicationOpen == false then
+    isApplicationOpen = true
+    
+    local AceGUI = LibStub("AceGUI-3.0")
+    local frame = AceGUI:Create("Frame")
+    frame:SetTitle(l["SetDBMTimer"])
+    frame.statustext:GetParent():Hide()
+    frame:SetCallback("OnClose",
+      function()
+        isApplicationOpen = false
+        AceGUI:Release(frame)
+      end)
+    frame:SetLayout("Flow")
+    frame:SetWidth(280)
+    frame:SetHeight(145)
+
+    local slider_time = AceGUI:Create("Slider")
+    slider_time:SetLabel("sec")
+    slider_time:SetSliderValues(0, 60, 5)
+    slider_time:SetValue(0)
+    slider_time:SetWidth(300)
+    slider_time:SetValue(15)
+    
+    local button_pause = AceGUI:Create("Button")
+    button_pause:SetText(l["Pause"])
+    button_pause:SetWidth(120)
+    button_pause:SetCallback("OnClick", 
+      function()
+        RunSlashCmd("/dbm break "..slider_time:GetValue())
+      end)
+
+    local button_pull = AceGUI:Create("Button")
+    button_pull:SetText(l["Pull"])
+    button_pull:SetWidth(120)
+    button_pull:SetCallback("OnClick", 
+      function()
+        RunSlashCmd("/dbm pull "..slider_time:GetValue())
+      end)
+
+    local button_readycheck = AceGUI:Create("Button")
+    button_readycheck:SetText(l["Readycheck"])
+    button_readycheck:SetWidth(120)
+    button_readycheck:SetCallback("OnClick", 
+      function()
+        RunSlashCmd("/readycheck")
+      end)
+
+    frame:AddChild(slider_time)
+    frame:AddChild(button_pause)
+    frame:AddChild(button_pull)
+    frame:AddChild(button_readycheck)
+  end
+end
+
 function AstronaX:CreateRaidSearchGUI() 
   if isApplicationOpen == false then
     isApplicationOpen = true
@@ -3162,7 +3225,7 @@ function AstronaX:CreateRaidSearchGUI()
     scrollcontainer:SetFullWidth(true)
     scrollcontainer:SetFullHeight(true) -- probably?
     scrollcontainer:SetLayout("Fill") -- important!
-    scrollcontainer:AddChild(scrollframe)    
+    scrollcontainer:AddChild(scrollframe)
     frame:AddChild(scrollcontainer)
   end
 end
