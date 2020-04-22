@@ -1732,7 +1732,7 @@ function AstronaX:GetRaidstatusColor(raidname, player_ilvl, ilvl, size)
   
   if raidname > time() then
     returnString = color_redgrayed..size..yellow
-  elseif player_ilvl > ilvl then
+  elseif player_ilvl >= ilvl then
     returnString = color_yellowgrayed..size..yellow
   elseif raidname == nil then
     returnString = color_greengrayed..size..yellow
@@ -1809,7 +1809,7 @@ function AstronaX:AlertOnMissingBuff(spell,soundpath)
   if last_sound_played[spell] == nil then
     last_sound_played[spell] = GetTime()
   end
-  if (GetTime()-last_sound_played[spell]) >= (3 * sound_played_counter) then
+  if (GetTime()-last_sound_played[spell]) >= (sound_played_counter * 2) then
     sound_played_counter = sound_played_counter + 1
     last_sound_played[spell] = GetTime();
 
