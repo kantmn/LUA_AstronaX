@@ -1638,8 +1638,10 @@ function AstronaX:GetItemLevel(target)
         TotelItemLevel = TotelItemLevel + itemLevel
         TotalItemCount = TotalItemCount + 1
       end
-      if MinItemLevel == nil or MinItemLevel > itemLevel then
-        MinItemLevel = itemLevel
+      if itemLevel then
+        if MinItemLevel == nil or MinItemLevel > itemLevel then
+          MinItemLevel = itemLevel
+        end
       end
     end
   end
