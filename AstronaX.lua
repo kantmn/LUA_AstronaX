@@ -2121,7 +2121,7 @@ function AstronaX:OnMenuRequest(level, value)
 			'func', "CreateRaidApplyGUI",
 			'closeWhenClicked', false
     )
-    if IsLeadOrAssist() or true then
+    if IsLeadOrAssist() then
       dewdrop:AddLine(
         'text', l["SetDBMTimer"],
         'arg1', self,
