@@ -1,3 +1,4 @@
+.gitignore
 # Compiled Lua sources
 luac.out
 
