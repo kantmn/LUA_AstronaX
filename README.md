@@ -10,20 +10,20 @@ Auto Tracking of Daily Heroics and Weekly Raid Quest as well as Weekly 1KW PvP W
 
 Screenshot Section
 -----------------------------------------------------------------------------------------------------------------------------
-<img src="https://raw.githubusercontent.com/kantmn/LUA_AstronaX/master/AstronaX_FuBar_Tooltip.png">
-<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_GUI_Settings_AutoX.png">
-<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_GUI_Settings_Infos.png">
-<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_GUI_Settings_Loot.png">
-<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_Raid_ApplicationWhisper.png">
-<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_Raid_MemberSearch_Page1.png">
-<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/AstronaX_Raid_MemberSearch_Page2.png">
+<img src="https://raw.githubusercontent.com/kantmn/LUA_AstronaX/master/Screenshots/AstronaX_FuBar_Tooltip.png">
+<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_GUI_Settings_AutoX.png">
+<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_GUI_Settings_Infos.png">
+<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_GUI_Settings_Loot.png">
+<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_Raid_ApplicationWhisper.png">
+<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_Raid_MemberSearch_Page1.png">
+<img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_Raid_MemberSearch_Page2.png">
 
 
 
 In the End the extracted AstronaX folder should be listed here
 <br>C:/Program Files/World of Warcraft/Interface/Addons/AstronaX
 <br>In my example screenshot i have installed WoW in the WoW 3.3.5a folder
-<br><img src="https://raw.githubusercontent.com/kantmn/LUA_AstronaX/master/AstronaX_Installation_Path.png">
+<br><img src="https://raw.githubusercontent.com/kantmn/LUA_AstronaX/master/Screenshots/AstronaX_Installation_Path.png">
 
 Installation Guide
 -----------------------------------------------------------------------------------------------------------------------------
