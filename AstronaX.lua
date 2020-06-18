@@ -959,8 +959,14 @@ function AstronaX:ADDON_LOADED()
         AstronaXDB[player][function_array[k]] = 1
       end
     end
-    if not(isRaid()) and GetCVar("farclip") ~= 400 then
+    if not(isRaid()) and GetCVar("farclip") ~= 400 and AstronaXDB[player]["farclip_toggle"] == 1 then
       AstronaXDB.farclip = GetCVar("farclip");
+    elseif not(isRaid()) and GetCVar("farclip") == 400 and AstronaXDB[player]["farclip_toggle"] == 1 then
+	  if AstronaXDB[UnitName("player")]["farclip_toggle"] ~= nil then
+	    SetCVar( "farclip", AstronaXDB[UnitName("player")]["farclip_toggle"])
+	  else
+	    SetCVar( "farclip", 4000)
+	  end
     end
     addon_color = AstronaXDB.addon_color
     addon_highlight = AstronaXDB.addon_highlight  
