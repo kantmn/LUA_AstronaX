@@ -183,7 +183,7 @@ l:RegisterTranslations("deDE", function() return {
    ["This character does not yet have dual specialization."] = "Dieser Held hat noch keine Duale Talent Spezialisierung.",
    ["Deployed %s to our guildbank."] = "Es wurden %s in die Gildenbank eingezahlt.",
    ["Took %s from our guildbank."] = "Es wurden %s aus der Gildenbank entnommen.",
-   ["No permissions to retrieve gold from the guildbank."] = "keine Berechtigung von der Gildenbank Gold zu entnehmen.",
+   ["No permissions to retrieve gold from the guildbank."] = "Keine Berechtigung von der Gildenbank Gold zu entnehmen.",
    ["Your withdraw limit does not allow to retrieve enough gold from the guildbank."] = "Dein Abhebungslimit erlaubt es dir nicht, genügend Gold von der Gildenbank zu holen.",
    ["You neither have enough gold in your poket nor offers your guildbank enough to pay your repair costs."] = "Du hast weder genug Gold in deinen Taschen noch bietet die Gildenbank genug an, um die Reparaturkosten zu bezahlen.",
    ["Whisper Spec + GS"] = "Flüster Spec + GS",
