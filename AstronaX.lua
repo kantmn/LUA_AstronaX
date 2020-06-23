@@ -16,6 +16,7 @@ local gone_afk_at = 0
 local xp_current_status = 0
 local last_sound_played = {}
 local sound_played_counter = 1
+local last_event_occurance = nil
 local isApplicationOpen = false
     
 local red    = "|cffff0000";
@@ -851,6 +852,7 @@ function SlashCmdList.AstronaX(_cmd)
     print(addon_color.." - TalentSpecs")
     print(addon_color.." - Apply for Raids or Search for a Raid GUI")
     print(addon_color.."Alt Trading Items -> based on DayTrader")
+    print(addon_color.."Fixing Combatlog once it breaks")
     print(addon_color.."Check Daily HC Status")
     print(addon_color.."Check Weekly PVP Quest")
     print(addon_color.."Check Weekly Raid Status")
@@ -909,6 +911,7 @@ function AstronaX:OnEnable()
 	self:RegisterEvent("PLAYER_LOGOUT")
   self:RegisterEvent("PLAYER_MONEY")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
+  self:RegisterEvent("PLAYER_REGEN_DISABLED")
 	self:RegisterEvent("PLAYER_TARGET_CHANGED")
 	self:RegisterEvent("PLAYER_TALENT_UPDATE")
 	self:RegisterEvent("PLAYER_UNGHOST")
@@ -1010,6 +1013,9 @@ function AstronaX:CHAT_MSG_WHISPER_INFORM(msg, target)
 end
 
 function AstronaX:COMBAT_LOG_EVENT_UNFILTERED(_, event, _, sourceName, _, _, destName, _, spellID, spellName, _, SuffixParam1, _, _)
+  -- used for self:FixBrokenCombatLog()
+  last_event_occurance =  GetTime()
+
 	if AstronaXDB[player]["tis"] == 1 and event == "SPELL_INTERRUPT" and destName and spellName and isInCombat() then
     if IsLeadOrAssist() then
       local channel_target = "PARTY"
@@ -1139,10 +1145,14 @@ end
 function AstronaX:PLAYER_REGEN_ENABLED()
   sound_played_counter = 0
   pending_rezz = 0
-	self:OnTextUpdate()
+  self:OnTextUpdate()
   if AstronaXDB[player]["tgham"] == 1 then
     self:GetGroupStats()
   end
+end
+
+function AstronaX:PLAYER_REGEN_DISABLED()
+  self:FixBrokenCombatLog()
 end
 
 function AstronaX:PLAYER_TARGET_CHANGED()
@@ -1526,6 +1536,21 @@ function AstronaX:GetPercentageTextColor(value)
   return color, text
 end
 
+function AstronaX:FixBrokenCombatLog()
+  print("Running Combat Check")
+  if UnitAffectingCombat(player) then
+    if last_event_occurance == nil then
+      last_event_occurance = GetTime()
+    end
+    print("Combat Log fine")
+    if ( last_event_occurance + 15)  < GetTime() then
+      CombatLogClearEntries()
+      last_event_occurance = GetTime()
+      print("Combat Log broken")
+    end
+  end
+end
+
 function AstronaX:GetArmorStatus()
 	local total_damage = 0	
 	for i = 1, 18 do
@@ -1892,7 +1917,7 @@ function AstronaX:GetWeeklyStatus(db_player)	-- returns true if weekly hc has be
 	return false
 end
 
-function AstronaX:w(author,color,raid, minIlvl)
+function AstronaX:AnnounceRaidSearch(author,color,raid, minIlvl)
   PlaySoundFileAstronax("Sound\\Interface\\MagicClick.wav")
   print(addon_color.."RaidWatch: "..addon_highlight..author..green.." is looking for "..color..raid..green)
 end
