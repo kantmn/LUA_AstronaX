@@ -947,8 +947,13 @@ function AstronaX:ADDON_LOADED()
       print(addon_color..l["Please use %s or %s to display the help, you can enable or disable features as you like."]:format(addon_highlight..SLASH_AstronaX1..addon_color, addon_highlight..SLASH_AstronaX2..addon_color))
       print(addon_color..l["You can also use our GUI to change settings, just go to ESC -> Interface -> Addons -> AstronaX."])
       
-      AstronaXDB[player]["abmv"] = 1000 --"gold auto balance money", "")    
-      AstronaXDB[player]["abm"] = 0 --"gold auto balance money", "")
+      AstronaXDB[player]["abmv"] = 1000 --"gold auto balance money amount
+      AstronaXDB[player]["abm"] = 0 --"gold auto balance money
+      AstronaXDB[player]["aslm"] = 0 --auto loot method
+      AstronaXDB[player]["arol"] = 0 --auto roll on loot
+      AstronaXDB[player]["staui"] = 0 --auto sell junk and unwanted items
+      AstronaXDB[player]["farclip_toggle"] = 0 --auto loot method
+    
       AstronaXDB.auto_inv_whisper_text = "ainv";
       AstronaXDB.addon_color = green;
       AstronaXDB.addon_highlight = yellow;
@@ -1887,7 +1892,7 @@ function AstronaX:GetWeeklyStatus(db_player)	-- returns true if weekly hc has be
 	return false
 end
 
-function AstronaX:AnnounceRaidSearch(author,color,raid, minIlvl)
+function AstronaX:w(author,color,raid, minIlvl)
   PlaySoundFileAstronax("Sound\\Interface\\MagicClick.wav")
   print(addon_color.."RaidWatch: "..addon_highlight..author..green.." is looking for "..color..raid..green)
 end
