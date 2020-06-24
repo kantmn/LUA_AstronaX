@@ -1016,7 +1016,7 @@ function AstronaX:COMBAT_LOG_EVENT_UNFILTERED(_, event, _, sourceName, _, _, des
   -- used for self:FixBrokenCombatLog()
   last_event_occurance =  GetTime()
 
-	if AstronaXDB[player]["tis"] == 1 and event == "SPELL_INTERRUPT" and destName and spellName and isInCombat() then
+	if AstronaXDB[player]["tis"] == 1 and event == "SPELL_INTERRUPT" and destName and spellName and isInCombat() and sourceName ~= nil then
     if IsLeadOrAssist() then
       local channel_target = "PARTY"
       if GetNumRaidMembers() > 1 then
@@ -1537,16 +1537,15 @@ function AstronaX:GetPercentageTextColor(value)
 end
 
 function AstronaX:FixBrokenCombatLog()
-  print("Running Combat Check")
   if UnitAffectingCombat(player) then
     if last_event_occurance == nil then
       last_event_occurance = GetTime()
     end
-    print("Combat Log fine")
+
     if ( last_event_occurance + 15)  < GetTime() then
       CombatLogClearEntries()
       last_event_occurance = GetTime()
-      print("Combat Log broken")
+      print(red.."Combat Log was broken, we have resetted the cache.")
     end
   end
 end
@@ -2248,7 +2247,7 @@ function AstronaX:OnTextUpdate()
   AstronaXDB[player]["ilvl"] = ilvl_average
   AstronaXDB[player]["ilvl_minimum"] = ilvl_minimum
   
-	if UnitLevel("player") == maxLevel and AstronaXDB[player] then
+	if UnitLevel("player") >= 15 and AstronaXDB[player] then
 		AstronaXDB[player]["class"] = GetClassName()
 		if GearScore_GetScore(UnitName("player"), "player") ~= nil then
 			AstronaXDB[player]["gearscore"] = GearScore_GetScore(UnitName("player"), "player");
