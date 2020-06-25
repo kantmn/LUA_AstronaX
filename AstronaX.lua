@@ -2331,7 +2331,17 @@ function AstronaX:OnTextUpdate()
     end
     text = text.."|TInterface\\Icons\\achievement_reputation_argentchampion:12|t "..reputation_colors[Rep_standing]..Rep_name.." "..math.floor(( (Rep_value - Rep_min) / (Rep_max-Rep_min) ) * 100 + 0.5).."%".."|r"..spacertab
   end
-  
+
+  if UnitLevel(player) ~= maxLevel then
+    local xp_cur = UnitXP(player);
+    local xp_max = UnitXPMax(player);
+
+    if xp_max > 0 and xp_cur > 0 then
+      text = text.."|TInterface\\Icons\\spell_magic_managain:12|t "
+      text = text..purple..round(xp_cur/xp_max).."% XP";
+    end
+  end
+
   self:SetText(text)
   return text
 end
