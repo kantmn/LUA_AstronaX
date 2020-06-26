@@ -14,6 +14,8 @@ local target_unit = nil
 local mailCount = nil
 local gone_afk_at = 0
 local xp_current_status = 0
+local xp_gain = 0
+local time_on_login = 0
 local last_sound_played = {}
 local sound_played_counter = 1
 local last_event_occurance = nil
@@ -906,7 +908,8 @@ function AstronaX:OnEnable()
   self:RegisterEvent("PARTY_LOOT_METHOD_CHANGED")
   self:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
   self:RegisterEvent("PLAYER_DEAD")
-	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+  self:RegisterEvent("PLAYER_ENTERING_WORLD")
+  self:RegisterEvent("PLAYER_LEVEL_UP")
   self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 	self:RegisterEvent("PLAYER_LOGOUT")
   self:RegisterEvent("PLAYER_MONEY")
@@ -915,7 +918,7 @@ function AstronaX:OnEnable()
 	self:RegisterEvent("PLAYER_TARGET_CHANGED")
 	self:RegisterEvent("PLAYER_TALENT_UPDATE")
 	self:RegisterEvent("PLAYER_UNGHOST")
-	self:RegisterEvent("PLAYER_XP_UPDATE")
+  self:RegisterEvent("PLAYER_XP_UPDATE")
 	self:RegisterEvent("QUEST_TURNED_IN")
 	self:RegisterEvent("QUEST_QUERY_COMPLETE")
 	self:RegisterEvent("RAID_INSTANCE_WELCOME")
@@ -940,6 +943,10 @@ f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 f:SetScript("OnEvent", OnEvent)
 
 function AstronaX:ADDON_LOADED()
+    if UnitLevel(player) ~= maxlevel then
+      time_on_login = GetTime()
+    end
+
     if(not AstronaXDB) then
       AstronaXDB = {}
       print(addon_highlight..l["This is the first start up of AstronaX. Thank you for installing."])
@@ -1104,6 +1111,14 @@ function AstronaX:PLAYER_DIFFICULTY_CHANGED()
   self:OnTextUpdate()
 end
 
+function AstronaX:PLAYER_LEVEL_UP()
+  if AstronaXDB[player]["txp"] == 1 then
+    xp_current_status = UnitXP("player")
+    self:GetPlayerXPStatus()
+    self:OnTextUpdate()
+  end
+end
+
 function AstronaX:PLAYER_ENTERING_WORLD()
   self:UpdateTalents()
   if AstronaXDB[player]["txp"] == 1 then
@@ -1146,6 +1161,10 @@ function AstronaX:PLAYER_REGEN_ENABLED()
   sound_played_counter = 0
   pending_rezz = 0
   self:OnTextUpdate()
+  if AstronaXDB[player]["txp"] == 1 then
+    self:GetPlayerXPStatus()
+    self:OnTextUpdate()
+  end
   if AstronaXDB[player]["tgham"] == 1 then
     self:GetGroupStats()
   end
@@ -1173,9 +1192,9 @@ function AstronaX:PLAYER_UNGHOST()
   self:AcceptRevival()
 end
 
-function AstronaX:PLAYER_XP_UPDATE(unit)
+function AstronaX:PLAYER_XP_UPDATE()
   if AstronaXDB[player]["txp"] == 1 then
-    self:GetPlayerXPStatus(unit)
+    self:GetPlayerXPStatus()
   end
 end
 
@@ -1741,25 +1760,24 @@ end
 
 function AstronaX:GetPlayerXPStatus(unit)
   if unit == nil then
-    unit = "player"
+    unit = player
   end
-  
-  if UnitName(unit) == player then
-    if not(isInCombat()) then
-      local xp_new = UnitXP(unit);
-      local xp_max = UnitXPMax(unit);
-      local xp_count = UnitXP(unit) - xp_current_status
-      
-      if xp_max > 0 and xp_count > 0 then
-        local text = addon_color..l["ExperienceStatus: "]
-        --text = text..red..round(xp_old/xp_max).."% "
-        text = text..yellow.."+ "..purple..xp_count.." XP"..yellow.." ( |cffA330C9"..round(xp_count/xp_max).."%"..yellow..") "
-        text = text.."|TInterface\\Icons\\spell_magic_managain:12|t"
-        text = text.." = "..green..round(xp_new/xp_max).."%";
-        print(text)
-      end
-      xp_current_status = UnitXP(unit)
+
+  if not(isInCombat()) then
+    local xp_new = UnitXP(unit);
+    local xp_max = UnitXPMax(unit);
+    local xp_count = UnitXP(unit) - xp_current_status
+    xp_gain = xp_gain + xp_count
+    
+    if xp_max > 0 and xp_count > 0 then
+      local text = addon_color..l["ExperienceStatus: "]
+      --text = text..red..round(xp_old/xp_max).."% "
+      text = text..yellow.."+ "..purple..xp_count.." XP"..yellow.." ( |cffA330C9"..round(xp_count/xp_max).."%"..yellow..") "
+      text = text.."|TInterface\\Icons\\spell_magic_managain:12|t"
+      text = text.." = "..green..round(xp_new/xp_max).."%";
+      print(text)
     end
+    xp_current_status = UnitXP(unit)
   end
 end
 
@@ -2339,6 +2357,11 @@ function AstronaX:OnTextUpdate()
     if xp_max > 0 and xp_cur > 0 then
       text = text.."|TInterface\\Icons\\spell_magic_managain:12|t "
       text = text..purple..round(xp_cur/xp_max).."% XP";
+
+      local time_passed_by = GetTime() - time_on_login
+      if xp_gain > 0 then
+        text = text..yellow.." "..round(xp_gain / time_passed_by / 60).." p/min"
+      end
     end
   end
 
