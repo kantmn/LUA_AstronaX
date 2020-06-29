@@ -1,3 +1,10 @@
+local red    = "|cffff0000";
+local orange = "|cffff8f00";
+local green  = "|cff00ff00";
+local yellow = "|cffffff00";
+local white = "|cffffffff";
+local purple = "|cffA330C9";
+
 local player = UnitName("player")
 local player_talents_points = "???"
 local player_talents_image = ""
@@ -13,7 +20,7 @@ local inviting_unit = nil
 local target_unit = nil
 local mailCount = nil
 local gone_afk_at = 0
-local xp_current_status = 0
+local xp_current_status = UnitXP(player)
 local xp_gain = 0
 local time_on_login = 0
 local last_sound_played = {}
@@ -21,12 +28,6 @@ local sound_played_counter = 1
 local last_event_occurance = nil
 local isApplicationOpen = false
     
-local red    = "|cffff0000";
-local orange = "|cffff8f00";
-local green  = "|cff00ff00";
-local yellow = "|cffffff00";
-local white = "|cffffffff";
-local purple = "|cffA330C9";
 
 local addon_color  = "|cff009a1a";
 local addon_warning  = red;
@@ -896,6 +897,7 @@ function AstronaX:OnEnable()
   self:RegisterEvent("CHAT_MSG_WHISPER")
   self:RegisterEvent("CHAT_MSG_WHISPER_INFORM")
   self:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+  self:RegisterEvent("COMBAT_TEXT_UPDATE")
   self:RegisterEvent("CONFIRM_LOOT_ROLL")
   self:RegisterEvent("START_LOOT_ROLL")
   self:RegisterEvent("CONFIRM_DISENCHANT_ROLL")
@@ -1019,6 +1021,21 @@ function AstronaX:CHAT_MSG_WHISPER_INFORM(msg, target)
   gone_afk_at = 0
 end
 
+function AstronaX:COMBAT_TEXT_UPDATE(message_type, faction_name, _)
+  if message_type == "FACTION" then
+    for factionIndex = 1, GetNumFactions() do
+      name, description, standingId, bottomValue, topValue, earnedValue, atWarWith,
+        canToggleAtWar, isHeader, isCollapsed, hasRep, isWatched, isChild = GetFactionInfo(factionIndex)
+      if 
+        isHeader == nil and
+        name == faction_name
+      then
+        SetWatchedFactionIndex(factionIndex)
+      end
+    end
+  end
+end
+
 function AstronaX:COMBAT_LOG_EVENT_UNFILTERED(_, event, _, sourceName, _, _, destName, _, spellID, spellName, _, SuffixParam1, _, _)
   -- used for self:FixBrokenCombatLog()
   last_event_occurance =  GetTime()
@@ -1122,7 +1139,6 @@ end
 function AstronaX:PLAYER_ENTERING_WORLD()
   self:UpdateTalents()
   if AstronaXDB[player]["txp"] == 1 then
-    xp_current_status = UnitXP("player")
     self:GetPlayerXPStatus()
   end
   self:GetRaidBlocks()
@@ -1248,7 +1264,6 @@ function AstronaX:UNIT_MANA()
 end
 
 function AstronaX:UPDATE_FACTION()
-  self:OnTextUpdate()
   self:OnTextUpdate()
 end
 
@@ -2289,7 +2304,7 @@ function AstronaX:OnTextUpdate()
 
   local text = ""
   if AstronaXDB[player]["bar_rs"] == 1 then
-    text = text.." |TInterface\\Icons\\trade_blacksmithing:12|t "..self:GetPercentageTextColor(tonumber(self:GetArmorStatus()))..self:GetArmorStatus()..yellow.." %"..spacertab
+    text = text.." |TInterface\\Icons\\trade_blacksmithing:12|t "..self:GetPercentageTextColor(tonumber(self:GetArmorStatus()))..self:GetArmorStatus()..yellow.." %|r"..spacertab
   end
   if AstronaXDB[player]["bar_ti"] == 1 then
     text = text.."|T"..player_talents_image..":12|t"
@@ -2304,10 +2319,10 @@ function AstronaX:OnTextUpdate()
     end
   end
   if AstronaXDB[player]["bar_tp"] == 1 then
-    text = text..player_talents_points
+    text = text..player_talents_points.."|r"
   end
   if AstronaXDB[player]["bar_tp"] == 1 or AstronaXDB[player]["bar_ti"] == 1 then
-    text = text..spacertab
+    text = text.."|r"..spacertab
   end
   if AstronaXDB[player]["bar_gs"] == 1 then
     text = text.."|TInterface\\Icons\\Ability_warrior_defensivestance:12|t |cff"..GearScoreColored.."|r"..spacertab
@@ -2322,10 +2337,10 @@ function AstronaX:OnTextUpdate()
     text = text.."|TInterface\\Icons\\spell_holy_proclaimchampion:12|t |cff0099ff"..count_herosim.."|r"..spacertab
   end
   if AstronaXDB[player]["bar_1k"] == 1 then
-    text = text.."|TInterface\\Icons\\inv_misc_platnumdisks:12|t |cffffffff"..count_steinbewahrer..spacertab
+    text = text.."|TInterface\\Icons\\inv_misc_platnumdisks:12|t |cffffffff"..count_steinbewahrer.."|r"..spacertab
   end
   if AstronaXDB[player]["bar_timer_1kw"] == 1 then
-    text = text..count_timer_1kw..spacertab
+    text = text..count_timer_1kw.."|r"..spacertab
   end
   if AstronaXDB[player]["bar_ho"] == 1 then
     text = text.."|TInterface\\Icons\\Inv_bannerpvp_01:12|t |cffff0000"..math.floor(count_pvphonor /1000).." / 75 k|r"..spacertab
@@ -2421,22 +2436,23 @@ function AstronaX:OnTooltipUpdate()
 
       for i, db_player in pairs(sorted_table) do
         local _, v = sorted_table[i], AstronaXDB[ sorted_table[i] ]
-          
+
         if ( 
           (v["talentspec_primary"] or v["talentspec_secondary"]) and 
           v["class"] and 
           v["gearscore"] and 
           v["armor"] and 
-          v[selectionIds[1]] and 
-          v[selectionIds[2]] and 
-          v[selectionIds[3]] and 
-          v[selectionIds[4]] and 
-          v[selectionIds[5]] and 
-          v[selectionIds[6]] and 
-          v["honor"] and 
-          v["money"] and 
-          v["title"]
+          v[selectionIds[1]] ~= nil and 
+          v[selectionIds[2]] ~= nil and 
+          v[selectionIds[3]] ~= nil and 
+          v[selectionIds[4]] ~= nil and 
+          v[selectionIds[5]] ~= nil and 
+          v[selectionIds[6]] ~= nil and 
+          v["honor"] ~= nil and 
+          v["money"] ~= nil and 
+          v["title"] ~= nil
         ) then
+          
           local color_stein = "|cffCCEEFF"			
           if v[selectionIds[6]] < 30 then color_stein = "|cff445566" end
           if v[selectionIds[6]] == 0 then color_stein = color_blacked end
