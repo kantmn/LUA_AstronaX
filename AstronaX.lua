@@ -2049,13 +2049,13 @@ function AstronaX:UpdateMoney()
   local deposit = current_money - (AstronaXDB[player]["abmv"] * 100 * 100);
   local withdraw = (100 * 100 * AstronaXDB[player]["abmv"] ) - current_money;
   
-  if deposit > 0 and AstronaXDB[player]["abm"] == 1 then
+  if deposit > 100 * 100 * 100  and AstronaXDB[player]["abm"] == 1 then
     print(addon_color..l["Deployed %s to our guildbank."]:format(format_money(deposit, true, true, true)..addon_color));
     DepositGuildBankMoney(deposit);
     PlaySoundFileAstronax("Sound\\Interface\\LootCoinSmall.wav");
   end
   
-  if withdraw > 0 and AstronaXDB[player]["abml"] == 1 then
+  if withdraw > 100 * 100 * 100 and AstronaXDB[player]["abml"] == 1 then
     if CanWithdrawGuildBankMoney() then
       if( withdraw <= GetGuildBankMoney() ) then
         print(addon_color..l["Took %s from our guildbank."]:format(format_money(withdraw, true, true, true)..addon_color));
