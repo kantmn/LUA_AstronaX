@@ -109,10 +109,12 @@ Für Windows (ab Vista)
 Damit dies funktioniert, muss die Eingabeaufforderung (auch als cmd bekannt) als Admin gestartet werden. Dazu geht ihr über Start->Programme->Zubehör auf die Eingabeaufforderung und aktiviert in den Eigenschaften "Als Administrator ausführen":
 	
 <WOWDIR> steht für euren WoW Installations Ordner, standartmäßig müsste das C:\Programme\World Of Warcraft\ sein.
-<ACCOUNT1> und <ACCOUNT2> stehen für eure Accountnamen, auch als LoginName bekannt
+	<ACCOUNT1> und <ACCOUNT2> stehen für eure Accountnamen, auch als LoginName bekannt
 
 cd <WOWDIR>/WTF/Account
+	
 mklink /d "<ACCOUNT2>" "<ACCOUNT1>"
+	
 mklink /d "<ACCOUNT3>" "<ACCOUNT1>"
 
 Was machen diese 3 Zeilen
