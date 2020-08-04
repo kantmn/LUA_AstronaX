@@ -1751,9 +1751,12 @@ function AstronaX:GetMail()
 
 				if money > 0 then
 					local _, isInvoice = GetInboxText(mailCount);
-					if isInvoice then
-						local _, itemName, playerName, _, _, _, _ = GetInboxInvoiceInfo(mailCount);
-						print(addon_highlight.." "..mailCount..addon_color..". "..l["Mail contains %s from %s for %s."]:format(format_money(money, true, true, true)..addon_color,addon_highlight..playerName..addon_color, white..itemName));
+          if isInvoice then
+            local _, itemName, playerName, _, _, _, _ = GetInboxInvoiceInfo(mailCount);
+            
+            if playerName ~= nil then
+              print(addon_highlight.." "..mailCount..addon_color..". "..l["Mail contains %s from %s for %s."]:format(format_money(money, true, true, true)..addon_color,addon_highlight..playerName..addon_color, white..itemName));
+            end
             
 					else
             print(addon_highlight.." "..mailCount..addon_color..". "..l["Mail by %s regarding %s contains %s."]:format(addon_highlight..sender..addon_color, white..subject, format_money(money, true, true, true)..addon_color));
