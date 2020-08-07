@@ -1343,22 +1343,24 @@ function AstronaX:AutoRepair()
   
   if CanMerchantRepair() == 1 then
     local RepairCost, canRepair = GetRepairAllCost()
-    if not canRepair or RepairCost == 0 then return end
-    local money = GetMoney()
-    -- gbammount currently selected Guild Rank can withdraw per day in GOLD instead of cupper
-    local gbAmount = GetGuildBankWithdrawMoney()
-    gbAmmount = gbAmount * 10000
-    -- gbmoney amount of money in the guild bank in copper. 
-    local gbMoney = GetGuildBankMoney()
-    
-    cost = RepairCost
-    if IsInGuild() and ( RepairCost <= gbMoney and RepairCost <= gbAmount) then
-    --if IsInGuild() and ((gbAmount == -1 and gbMoney > RepairCost) or gbAmount > RepairCost) then
-      method = 2
-    elseif money > RepairCost then
-      method = 1
-    else
-      print(addon_color..l["You neither have enough gold in your poket nor offers your guildbank enough to pay your repair costs."])
+    if tonumber(AstronaX:GetArmorStatus()) < 75 then
+      if not canRepair or RepairCost < 50 then return end
+      local money = GetMoney()
+      -- gbammount currently selected Guild Rank can withdraw per day in GOLD instead of cupper
+      local gbAmount = GetGuildBankWithdrawMoney()
+      gbAmmount = gbAmount * 10000
+      -- gbmoney amount of money in the guild bank in copper. 
+      local gbMoney = GetGuildBankMoney()
+      
+      cost = RepairCost
+      if IsInGuild() and ( RepairCost <= gbMoney and RepairCost <= gbAmount) then
+      --if IsInGuild() and ((gbAmount == -1 and gbMoney > RepairCost) or gbAmount > RepairCost) then
+        method = 2
+      elseif money > RepairCost then
+        method = 1
+      else
+        print(addon_color..l["You neither have enough gold in your poket nor offers your guildbank enough to pay your repair costs."])
+      end
     end
     
     if method == 2 or method == 1 then 

@@ -163,23 +163,26 @@ function RunSlashCmd(cmd)
      i = i + 1
   end
 end
-
+--obsolete?
 function canRepair()
-  if CanMerchantRepair() == 1 then
-    local cost, canRepair = GetRepairAllCost()
-	if tonumber(AstronaX:GetArmorStatus()) < 80 then
-		if not canRepair or cost == 0 then return end
-		local money = GetMoney()
-		local gbAmount = GetGuildBankWithdrawMoney()
-		local gbMoney = GetGuildBankMoney()
-		if IsInGuild() and ((gbAmount == -1 and gbMoney > cost) or gbAmount > cost) then
-		  return 2, cost
-		elseif money > cost then
-		  return 1, cost
-		end
-	end
-  end
+  return false
+  -- if CanMerchantRepair() == 1 then
+  --   local cost, canRepair = GetRepairAllCost()
+  -- if tonumber(AstronaX:GetArmorStatus()) < 80 then
+  --   print('Armor: '..AstronaX:GetArmorStatus()..' Costs: '..cost);
+	-- 	if not canRepair or cost <= 5000 then return end
+	-- 	local money = GetMoney()
+	-- 	local gbAmount = GetGuildBankWithdrawMoney()
+	-- 	local gbMoney = GetGuildBankMoney()
+	-- 	if IsInGuild() and ((gbAmount == -1 and gbMoney > cost) or gbAmount > cost) then
+	-- 	  return 2, cost
+	-- 	elseif money > cost then
+	-- 	  return 1, cost
+	-- 	end
+	-- end
+  -- end
 end
+
 function isChannelJoined(channelname)
   local chanList = { GetChannelList() }
   for i=1, #chanList, 2 do
