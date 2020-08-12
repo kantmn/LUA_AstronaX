@@ -1343,7 +1343,7 @@ function AstronaX:AutoRepair()
   
   if CanMerchantRepair() == 1 then
     local RepairCost, canRepair = GetRepairAllCost()
-    if tonumber(AstronaX:GetArmorStatus()) < 75 then
+    if tonumber(AstronaX:GetArmorStatus()) < 80 then
       if not canRepair or RepairCost < 50 then return end
       local money = GetMoney()
       -- gbammount currently selected Guild Rank can withdraw per day in GOLD instead of cupper
@@ -1418,14 +1418,33 @@ function AstronaX:AutoRollOnLoot(rollID)
   local rollType = 4 -- default nothing
   local rollTypeStrings = {l["needed"],l["greeded"],l["dizzed"],l["will manually select"]}
   
-  if UnitLevel(player) == maxLevel and UnitIsDeadOrGhost(player) == nil then
-    if canNeed and bindOnPickUp ~= 1 and not(isRaid()) then
-      rollType = 1  -- 1 = need
-    elseif isRaid() or AstronaXDB[player]["ilvl_minimum"] > 200 then
-      if canDisenchant and quality <= 3 then
+  if UnitLevel(player) == maxLevel and UnitIsDeadOrGhost(player) == nil and AstronaXDB[player]["ilvl_minimum"] > 200  then
+    -- grüne items wenn möglich immer dissen
+    if quality == 2 then -- 2 = grün
+      if canDisenchant then
         rollType = 3  -- 3 = dizz
-      elseif quality <= 3 then
+      else
         rollType = 2  -- 2 = gier
+      end
+    end
+
+    -- blaue items im raid needen, sonst dissen oder alternative gieren
+    if quality == 3 then -- 2 = blau
+      if canNeed and isRaid() then
+        rollType = 1  -- 1 = need
+      else
+        if canDisenchant then
+          rollType = 3  -- 3 = dizz
+        else
+          rollType = 2  -- 2 = gier
+        end
+      end
+    end
+
+    -- nicht gebundene epics needen
+    if quality == 4 then -- 4 = episch
+      if bindOnPickUp ~= 1 and canNeed then
+        rollType = 1  -- 1 = need
       end
     end
   end
