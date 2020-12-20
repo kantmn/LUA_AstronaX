@@ -1,4 +1,5 @@
 local red    = "|cffff0000";
+local blue    = "|cff0000ff";
 local orange = "|cffff8f00";
 local green  = "|cff00ff00";
 local yellow = "|cffffff00";
@@ -1809,9 +1810,14 @@ function AstronaX:GetPlayerXPStatus(unit)
     xp_gain = xp_gain + xp_count
     
     if xp_max > 0 and xp_count > 0 then
+      local xp_percent = round(xp_count/xp_max)
       local text = addon_color..l["ExperienceStatus: "]
       --text = text..red..round(xp_old/xp_max).."% "
-      text = text..yellow.."+ "..purple..xp_count.." XP"..yellow.." ( |cffA330C9"..round(xp_count/xp_max).."%"..yellow..") "
+      if xp_percent == 0 then
+        text = text..yellow.."+ "..purple..xp_count.." XP"..yellow.." ( |cffA330C9< 0%"..yellow..") "
+      else
+        text = text..yellow.."+ "..purple..xp_count.." XP"..yellow.." ( |cffA330C9"..xp_percent.."%"..yellow..") "
+      end
       text = text.."|TInterface\\Icons\\spell_magic_managain:12|t"
       text = text.." = "..green..round(xp_new/xp_max).."%";
       print(text)
@@ -2660,7 +2666,7 @@ function AstronaX:OnTooltipUpdate()
     
     cat = Tablet:AddCategory('columns', 3)
     cat:AddLine(
-    'text', "Left Mouse Click",
+    'text', green.."Left Mouse Click",
     'justify', "LEFT",
     'text2', l["Settings"],
     'func', function()
@@ -2668,7 +2674,7 @@ function AstronaX:OnTooltipUpdate()
     end)
 
     cat:AddLine(
-    'text', "ALT + Left Mouse Click",
+    'text', red.."ALT "..yellow.."+ "..green.."Left Mouse Click",
     'justify', "LEFT",
     'text2', l["Apply"],
     'func', function()
@@ -2676,7 +2682,7 @@ function AstronaX:OnTooltipUpdate()
     end)
 
     cat:AddLine(
-    'text', "SHIFT + Left Mouse Click",
+    'text', blue.."SHIFT "..yellow.."+ "..green.."Left Mouse Click",
     'justify', "LEFT",
     'text2', l["ToggleTalents"],
     'func', function()
@@ -2684,7 +2690,7 @@ function AstronaX:OnTooltipUpdate()
     end)
 
     cat:AddLine(
-    'text', "CTRL + Left Mouse Click",
+    'text', purple.."CTRL "..yellow.."+ "..green.."Left Mouse Click",
     'justify', "LEFT",
     'text2', "Raid Search GUI",
     'func', function()
@@ -2692,7 +2698,7 @@ function AstronaX:OnTooltipUpdate()
      end)
    
     cat:AddLine(
-    'text', "Left Mouse Click on Character",
+    'text', green.."Left Mouse "..yellow.."Click on Character",
     'justify', "LEFT",
     'text2', l["Opens Whisper target input to apply for a raid/group"]
   )
