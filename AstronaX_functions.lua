@@ -194,12 +194,6 @@ function isChannelJoined(channelname)
 end
 
 function isRaid() 
-  if GetNumRaidMembers() <= 10 then
-    SetCVar("showLootSpam", 1)
-  else
-    SetCVar("showLootSpam", 0)
-  end
-  
   -- set viewdistance low if yes else to max
 	local result = false
 	if GetNumRaidMembers() > 1 and not(IsFlying()) and not(GetZoneText() == "Dalaran" or GetZoneText() == "Wintergrasp" or GetZoneText() == "Tausendwintersee") then

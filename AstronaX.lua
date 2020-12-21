@@ -460,6 +460,13 @@ local options = {
       name = "Loot",
       order = order,
       args = {
+        sals = {
+          order = 30, type = "toggle", width = "full",
+          name = l["sals"],
+          desc = l["sals_help"],
+          get = function() if AstronaXDB[player]["sals"] == 1 then return true else return false end end,
+          set = function(_,v) local new = 0 if v then new = 1 end AstronaXDB[player]["sals"] = new; end,
+        },
         arol = {
           order = 31, type = "toggle", width = "full",
           name = l["arol"],
@@ -1226,6 +1233,16 @@ function AstronaX:QUEST_QUERY_COMPLETE()
 end
 
 function AstronaX:RAID_ROSTER_UPDATE()
+  if GetNumRaidMembers() <= 10 then
+    -- SetCVar("showLootSpam", 1)
+    if AstronaXDB[player]["sals"] == 1 then
+      SetCVar("showLootSpam", 0)
+    end
+  else
+    if AstronaXDB[player]["sals"] == 1  then
+      SetCVar("showLootSpam", 0)
+    end
+  end
   --isRaid()
 end
 
