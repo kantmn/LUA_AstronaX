@@ -159,6 +159,20 @@ local spec_icons = ({
     ["Warrior Schutz"] = "Interface\\Icons\\ability_warrior_defensivestance.blp",
 })
 
+local profession_icons = ({
+    ["Alchemie"] = "Interface\\Icons\\trade_alchemy.blp",
+    ["Bergbau"] = "Interface\\Icons\\trade_mining.blp",
+    ["Ingenieurskunst"] = "Interface\\Icons\\trade_engineering.blp",
+    ["Inschriftenkunde"] = "Interface\\Icons\\inv_inscription_tradeskill01.blp",
+    ["Juwelenschleifen"] = "Interface\\Icons\\inv_misc_gem_02.blp",
+    ["Kürschnerei"] = "Interface\\Icons\\inv_misc_pelt_wolf_01.blp",
+    ["Kräutersammeln"] = "Interface\\Icons\\spell_nature_naturetouchgrow.blp",
+    ["Lederverarbeitung"] = "Interface\\Icons\\inv_misc_armorkit_17.blp",
+    ["Schmiedekunst"] = "Interface\\Icons\\trade_blacksmithing.blp",
+    ["Schneiderei"] = "Interface\\Icons\\trade_tailoring.blp",
+    ["Verzauberkunst"] = "Interface\\Icons\\trade_engraving.blp",
+})
+
 local function_array = {
   "bar_timer_1kw",
   "bar_rs",
@@ -934,6 +948,7 @@ function AstronaX:OnEnable()
 	self:RegisterEvent("RAID_INSTANCE_WELCOME")
 	self:RegisterEvent("RAID_ROSTER_UPDATE")
 	self:RegisterEvent("RESURRECT_REQUEST")
+	self:RegisterEvent("TRADE_SKILL_SHOW")
 	self:RegisterEvent("UNIT_AURA")
 	self:RegisterEvent("UNIT_MANA")
 	self:RegisterEvent("UPDATE_FACTION")
@@ -1005,6 +1020,31 @@ function AstronaX:START_LOOT_ROLL(rollID)
   if AstronaXDB[player]["arol"] == 1 then
     self:AutoRollOnLoot(rollID)
   end
+end
+
+function AstronaX:TRADE_SKILL_SHOW()
+	local tradeskillName, currentLevel, maxLevel = GetTradeSkillLine();
+		
+	if AstronaXDB[player]["professions_1_name"] == nil or AstronaXDB[player]["professions_1_name"] == tradeskillName then
+		AstronaXDB[player]["professions_1_name"] = tradeskillName
+		AstronaXDB[player]["professions_1_currentLevel"] = currentLevel
+		AstronaXDB[player]["professions_1_maxLevel"] = maxLevel
+	else
+		if AstronaXDB[player]["professions_2_name"] == nil or AstronaXDB[player]["professions_2_name"] == tradeskillName then
+			AstronaXDB[player]["professions_2_name"] = tradeskillName
+			AstronaXDB[player]["professions_2_currentLevel"] = currentLevel
+			AstronaXDB[player]["professions_2_maxLevel"] = maxLevel
+		else
+		-- profession has changed, update first, and clear sec, on next profession open this is fixed
+			AstronaXDB[player]["professions_1_name"] = tradeskillName
+			AstronaXDB[player]["professions_1_currentLevel"] = currentLevel
+			AstronaXDB[player]["professions_1_maxLevel"] = maxLevel
+			
+			AstronaXDB[player]["professions_2_name"] = ""
+			AstronaXDB[player]["professions_2_currentLevel"] = ""
+			AstronaXDB[player]["professions_2_maxLevel"] = ""
+		end
+	end
 end
 
 function AstronaX:CHAT_MSG_CHANNEL(msg, author, _, _, _, _, _, _, channel_name, _, _)
@@ -1437,34 +1477,48 @@ function AstronaX:AutoRollOnLoot(rollID)
   local rollTypeStrings = {l["needed"],l["greeded"],l["dizzed"],l["will manually select"]}
   
   if UnitLevel(player) == maxLevel and UnitIsDeadOrGhost(player) == nil and AstronaXDB[player]["ilvl_minimum"] > 200  then
-    -- grüne items wenn möglich immer dissen
-    if quality == 2 then -- 2 = grün
-      if canDisenchant then
-        rollType = 3  -- 3 = dizz
-      else
-        rollType = 2  -- 2 = gier
-      end
-    end
+	-- ausnahmen
+	
+	if name == 'Kaputte Halskette' or name == 'Buch der Glyphenbeherrschung' then
+	print('debug: wanted item name :'..name..':')
+		if canNeed then
+			rollType = 1  -- 1 = need
+		else
+			rollType = 2  -- 2 = gier
+		end
+	else
+		-- grüne items wenn möglich immer dissen
+		if quality == 2 then -- 2 = grün
+		  if canDisenchant then
+			rollType = 3  -- 3 = dizz
+		  else
+			rollType = 2  -- 2 = gier
+		  end
+		end
 
-    -- blaue items im raid needen, sonst dissen oder alternative gieren
-    if quality == 3 then -- 2 = blau
-      if canNeed and isRaid() then
-        rollType = 1  -- 1 = need
-      else
-        if canDisenchant then
-          rollType = 3  -- 3 = dizz
-        else
-          rollType = 2  -- 2 = gier
-        end
-      end
-    end
+		-- blaue items im raid needen, sonst dissen oder alternative gieren
+		if quality == 3 then -- 2 = blau
+		  if canNeed and isRaid() then
+			if name == 'Urtümliches Saronit' then
+			else
+				rollType = 1  -- 1 = need
+			end
+		  else
+			if canDisenchant then
+			  rollType = 3  -- 3 = dizz
+			else
+			  rollType = 2  -- 2 = gier
+			end
+		  end
+		end
 
-    -- nicht gebundene epics needen
-    if quality == 4 then -- 4 = episch
-      if bindOnPickUp ~= 1 and canNeed then
-        rollType = 1  -- 1 = need
-      end
-    end
+		-- nicht gebundene epics needen
+		if quality == 4 then -- 4 = episch
+		  if bindOnPickUp ~= 1 and canNeed then
+			rollType = 1  -- 1 = need
+		  end
+		end
+	  end
   end
 
   if rollType < 4 then
@@ -2544,8 +2598,31 @@ function AstronaX:OnTooltipUpdate()
           
           local armor_text = self:GetPercentageTextColor(tonumber(v["armor"]))..v["armor"]..yellow.." %"
           
+		  local professions = ""
+		  if v["professions_1_name"] ~= nil then
+			professions = professions.."|T"..profession_icons[v["professions_1_name"]]..":16|t "
+			-- if v["professions_1_currentLevel"] == v["professions_1_maxLevel"] then
+				-- professions = professions.."Max"
+			-- else
+				-- professions = professions..v["professions_1_currentLevel"]
+			-- end
+		  else
+			professions = professions.."|T"..unknownSpecIcon..":16|t "
+		  end
+		  
+		  if v["professions_2_name"] ~= nil then
+			professions = professions.."|T"..profession_icons[v["professions_2_name"]]..":16|t "
+			-- if v["professions_2_currentLevel"] == v["professions_2_maxLevel"] then
+				-- professions = professions.."Max"
+			-- else
+				-- professions = professions..v["professions_2_currentLevel"]
+			-- end
+		  else
+			professions = professions.."|T"..unknownSpecIcon..":16|t "
+		  end
+
           local cols = {}      
-          cols['text'] = talents_specs.." "..GetClassColor(v["class"])..db_player
+          cols['text'] = talents_specs.." "..professions.." "..GetClassColor(v["class"])..db_player
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_gearscore"], "|cff"..GetGearscoreColored(v["gearscore"]))
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_repair"], armor_text)
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_264"], color_264..v[selectionIds[1]])
@@ -2847,7 +2924,7 @@ function AstronaX:SetDBMTimer()
     frame:SetHeight(145)
 
     local slider_time = AceGUI:Create("Slider")
-    slider_time:SetLabel("sec")
+    slider_time:SetLabel("Units")
     slider_time:SetSliderValues(0, 60, 5)
     slider_time:SetValue(0)
     slider_time:SetWidth(300)
