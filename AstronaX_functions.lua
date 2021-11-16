@@ -448,7 +448,8 @@ function format_money(money, icons, fulldisplay, kshort)
 		end
 		return text_money
 	else 
-		return money
+		
+		return " |TInterface\\Icons\\inv_misc_coin_06:12|t "..COPPER_TEXT..money.."|r "
 	end
 end
 

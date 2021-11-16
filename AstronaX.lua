@@ -253,7 +253,6 @@ local l = AceLibrary("AceLocale-2.2"):new("AstronaX")
 local dewdrop = AceLibrary("Dewdrop-2.0")
 
 AstronaX = AceLibrary("AceAddon-2.0"):new("FuBarPlugin-2.0", "AceConsole-2.0", "AceEvent-2.0", "AceDB-2.0")
---AstronaX.hasIcon = true
 AstronaX.hasNoColor = true
 AstronaX.title = "AstronaX";
 AstronaX.defaultPosition = "CENTER"
@@ -1045,8 +1044,10 @@ end
 
 function AstronaX:TRADE_SKILL_SHOW()
 	local tradeskillName, currentLevel, maxLevel = GetTradeSkillLine();
-		
-	self:Update_Professions(tradeskillName)
+	
+	if tradeskillName ~= nil then
+		self:Update_Professions(tradeskillName)
+	end
 end
 
 function AstronaX:Update_Professions(tradeskillName)
@@ -1545,8 +1546,8 @@ function AstronaX:AutoRollOnLoot(rollID)
 
 	-- ausnahmen
 	for dontRollOnCounter = 1, #dontRollOn do
-			print("hit on special item "..name);
 		if name == dontRollOn[dontRollOnCounter] then
+			print("hit on special item "..name);
 			
 			if canNeed then
 				rollType = 1  -- 1 = need
@@ -2068,7 +2069,7 @@ function AstronaX:GetUnitAuraUpdates()
     self:GetSpellUponTarget(l["Erdschild"],"focus","Sound\\Interface\\LFG_Rewards.wav")
     
   elseif isInCombat() and isInGroup() and GetClassName() == "WARLOCK" then
-    self:GetSpellUponTarget(l["Rüstung"],"player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
+    self:GetSpellUponTarget(l["rüstung"],"player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
     if select(1,GetWeaponEnchantInfo()) == nil then
       self:AlertOnMissingBuff(l["WeaponBuff"],"Sound\\Interface\\Sound\\Interface\\ReadyCheck.wav")
     end
@@ -2527,7 +2528,7 @@ function AstronaX:OnTextUpdate()
 
       local time_passed_by = GetTime() - time_on_login
       if xp_gain > 0 then
-        text = text..yellow.." "..round(xp_gain / time_passed_by / 60).." p/min"
+        text = text..yellow.." "..round(xp_gain / time_passed_by / 60).." xp/min"
       end
     end
   end
@@ -2559,7 +2560,7 @@ function AstronaX:OnTooltipUpdate()
       -- return AstronaXDB[a]["gearscore"] > AstronaXDB[b]["gearscore"]
     -- end)
 
-    if AstronaXDB[player]["tooltip_chardetails"] == 1 then
+    if AstronaXDB[player]["tooltip_chardetails"] == 1 and UnitLevel(player) == maxLevel then
       local total_money = 0
       for i in pairs(sorted_table) do
         local _, v = sorted_table[i], AstronaXDB[ sorted_table[i] ]
@@ -2646,11 +2647,11 @@ function AstronaX:OnTooltipUpdate()
           
 
 		  local professions = "|T"..unknownSpecIcon..":16|t "
-		  if v["professions_1_name"] ~= nil then
+		  if profession_icons[v["professions_1_name"]] ~= nil then
 			professions = "|T"..profession_icons[v["professions_1_name"]]..":16|t "
 		  end
 		  
-		  if v["professions_2_name"] ~= nil then
+		  if profession_icons[v["professions_2_name"]] ~= nil then
 			professions = professions.."|T"..profession_icons[v["professions_2_name"]]..":16|t "
 		  else
 			professions = professions.."|T"..unknownSpecIcon..":16|t "
@@ -3054,15 +3055,30 @@ function AstronaX:CreateRaidSearchGUI()
     slider_tanks:SetSliderValues(0, slider_tanks_max, 1)
     slider_tanks:SetValue(0)
     
+	local checkbox_or_heals = AceGUI:Create("CheckBox")
+    checkbox_or_heals:SetType("checkbox")
+    checkbox_or_heals:SetLabel(l["or"])
+    checkbox_or_heals:SetValue(false)	
+	
     local slider_heals = AceGUI:Create("Slider")
     slider_heals:SetLabel(l["Heals"])
     slider_heals:SetSliderValues(0, slider_heals_max, 1)
     slider_heals:SetValue(0)
-    
+	
+	local checkbox_or_meles = AceGUI:Create("CheckBox")
+    checkbox_or_meles:SetType("checkbox")
+    checkbox_or_meles:SetLabel(l["or"])
+    checkbox_or_meles:SetValue(false)	
+	    
     local slider_meles = AceGUI:Create("Slider")
     slider_meles:SetLabel(l["Meles"])
     slider_meles:SetSliderValues(0, slider_meles_max, 1)
     slider_meles:SetValue(0)
+	
+	local checkbox_or_ranges = AceGUI:Create("CheckBox")
+    checkbox_or_ranges:SetType("checkbox")
+    checkbox_or_ranges:SetLabel(l["or"])
+    checkbox_or_ranges:SetValue(false)	
     
     local slider_ranges = AceGUI:Create("Slider")
     slider_ranges:SetLabel(l["Ranges"])
@@ -3284,7 +3300,7 @@ function AstronaX:CreateRaidSearchGUI()
         local hh = slider_heals:GetValue()
         local mdd = slider_meles:GetValue()
         local rdd = slider_ranges:GetValue()
-        
+		
         if raid == "Weekly" then 
           for index=1, GetNumQuestLogEntries() do
             --local questheader = select(4,GetQuestLogTitle(index))
@@ -3301,9 +3317,9 @@ function AstronaX:CreateRaidSearchGUI()
         
         local msg_tt = ""
         if tt and tonumber(tt) > 0 then
-          msg_tt = " "..tt.." Tank "
+          msg_tt = tt.." Tank "
           if tonumber(tt) > 1 then
-            msg_tt = " "..tt.." Tanks "
+            msg_tt = tt.." Tanks "
           end
           
           if checkbox_tank_dk:GetValue() or
@@ -3316,15 +3332,17 @@ function AstronaX:CreateRaidSearchGUI()
             if checkbox_tank_druid:GetValue() then msg_tt = msg_tt..short_spec_names["Druid Wilder Kampf"].." " end
             if checkbox_tank_paladin:GetValue() then msg_tt = msg_tt..short_spec_names["Paladin Schutz"].." " end
             if checkbox_tank_warrior:GetValue() then msg_tt = msg_tt..short_spec_names["Warrior Schutz"].." " end
-            msg_tt = msg_tt..")"
+            msg_tt = msg_tt..") "
           end
         end
         
+		if checkbox_or_heals:GetValue() then msg_tt = msg_tt..l["or"].." " end
+		
         local msg_hh = ""
         if hh and tonumber(hh) > 0 then
-          msg_hh = " "..hh.." Heal "
+          msg_hh = hh.." Heal "
           if tonumber(hh) > 1 then
-            msg_hh = " "..hh.." Heals "
+            msg_hh = hh.." Heals "
           end
           
           if
@@ -3340,15 +3358,17 @@ function AstronaX:CreateRaidSearchGUI()
             if checkbox_heal_druid:GetValue() then msg_hh = msg_hh..short_spec_names["Druid Wiederherst."].." " end
             if checkbox_heal_paladin:GetValue() then msg_hh = msg_hh..short_spec_names["Paladin Heilig"].." " end
             if checkbox_heal_shaman:GetValue() then msg_hh = msg_hh..short_spec_names["Shaman Wiederherst."].." " end            
-            msg_hh = msg_hh..")"
+            msg_hh = msg_hh..") "
           end
         end
+		
+		if checkbox_or_meles:GetValue() then msg_hh = msg_hh..l["or"].." " end
         
         local msg_mdd = ""
         if mdd and tonumber(mdd) > 0 then
-          msg_mdd = " "..mdd.." Mele "
+          msg_mdd = mdd.." Mele "
           if tonumber(mdd) > 1 then
-            msg_mdd = " "..mdd.." Meles "
+            msg_mdd = mdd.." Meles "
           end
           
           if
@@ -3374,15 +3394,17 @@ function AstronaX:CreateRaidSearchGUI()
             if checkbox_mele_paladin:GetValue() then msg_mdd = msg_mdd..short_spec_names["Paladin Vergeltung"].." " end
             if checkbox_mele_shaman:GetValue() then msg_mdd = msg_mdd..short_spec_names["Shaman Verstärk."].." " end
             if checkbox_mele_udk:GetValue() then msg_mdd = msg_mdd..short_spec_names["Deathknight Unheilig"].." " end
-            msg_mdd = msg_mdd..")"
+            msg_mdd = msg_mdd..") "
           end
         end
+		
+		if checkbox_or_ranges:GetValue() then msg_mdd = msg_mdd..l["or"].." " end
         
         local msg_rdd = ""
         if rdd and tonumber(rdd) > 0 then
-          msg_rdd = " "..rdd.." Range "
+          msg_rdd = rdd.." Range "
           if tonumber(rdd) > 1 then
-            msg_rdd = " "..rdd.." Ranges "
+            msg_rdd = rdd.." Ranges "
           end
           
           if
@@ -3412,7 +3434,7 @@ function AstronaX:CreateRaidSearchGUI()
             if checkbox_range_shunter:GetValue() then msg_rdd = msg_rdd..short_spec_names["Hunter Überleben"].." " end
             if checkbox_range_spriest:GetValue() then msg_rdd = msg_rdd..short_spec_names["Priest Schatten"].." " end
             if checkbox_range_xwarlock:GetValue() then msg_rdd = msg_rdd..short_spec_names["Warlock Zerstörung"].." " end
-            msg_rdd = msg_rdd..")"
+            msg_rdd = msg_rdd..") "
           end
         end
         
@@ -3421,14 +3443,14 @@ function AstronaX:CreateRaidSearchGUI()
           comment = ""
         end
         
-        if msg_tt ~= "" or msg_hh ~= "" or msg_mdd ~= "" or msg_rdd ~= "" then
+        if msg_tt ~= "" or msg_hh ~= "" or msg_mdd ~= "" or msg_rdd ~= "" or comment ~= "" then
           local msg = l["For %s we are looking for %s%s%s%s %s"]:format(raid, msg_tt, msg_hh, msg_mdd, msg_rdd, comment)
           local chanList = { GetChannelList() }
           
           for i=1, #chanList, 2 do
             if chanList[i+1] == "World" or chanList[i+1] == "world" then
               SendChatMessage(msg, "CHANNEL" ,COMMON ,chanList[i]); 
-              --SendChatMessage(msg, "WHISPER" ,COMMON , player); 
+              -- SendChatMessage(msg, "WHISPER" ,COMMON , player); 
             end
           end
         else
@@ -3441,8 +3463,11 @@ function AstronaX:CreateRaidSearchGUI()
     frame:AddChild(editbox)
     
     scrollframe:AddChild(slider_tanks)
+    scrollframe:AddChild(checkbox_or_heals)
     scrollframe:AddChild(slider_heals)
+	scrollframe:AddChild(checkbox_or_meles)
     scrollframe:AddChild(slider_meles)
+	scrollframe:AddChild(checkbox_or_ranges)
     scrollframe:AddChild(slider_ranges)
     
     local heading_tanks = AceGUI:Create("InteractiveLabel")
