@@ -1258,6 +1258,8 @@ function AstronaX:PLAYER_REGEN_ENABLED()
   if AstronaXDB[player]["tgham"] == 1 then
     self:GetGroupStats()
   end
+  
+  self:GetRaidBlocks()
 end
 
 function AstronaX:PLAYER_REGEN_DISABLED()
@@ -3334,9 +3336,9 @@ function AstronaX:CreateRaidSearchGUI()
             if checkbox_tank_warrior:GetValue() then msg_tt = msg_tt..short_spec_names["Warrior Schutz"].." " end
             msg_tt = msg_tt..") "
           end
+		  if checkbox_or_heals:GetValue() then msg_tt = msg_tt..l["or"].." " end
         end
         
-		if checkbox_or_heals:GetValue() then msg_tt = msg_tt..l["or"].." " end
 		
         local msg_hh = ""
         if hh and tonumber(hh) > 0 then
@@ -3360,9 +3362,9 @@ function AstronaX:CreateRaidSearchGUI()
             if checkbox_heal_shaman:GetValue() then msg_hh = msg_hh..short_spec_names["Shaman Wiederherst."].." " end            
             msg_hh = msg_hh..") "
           end
+		  if checkbox_or_meles:GetValue() then msg_hh = msg_hh..l["or"].." " end
         end
 		
-		if checkbox_or_meles:GetValue() then msg_hh = msg_hh..l["or"].." " end
         
         local msg_mdd = ""
         if mdd and tonumber(mdd) > 0 then
@@ -3396,9 +3398,9 @@ function AstronaX:CreateRaidSearchGUI()
             if checkbox_mele_udk:GetValue() then msg_mdd = msg_mdd..short_spec_names["Deathknight Unheilig"].." " end
             msg_mdd = msg_mdd..") "
           end
+		  if checkbox_or_ranges:GetValue() then msg_mdd = msg_mdd..l["or"].." " end
         end
 		
-		if checkbox_or_ranges:GetValue() then msg_mdd = msg_mdd..l["or"].." " end
         
         local msg_rdd = ""
         if rdd and tonumber(rdd) > 0 then
@@ -3444,13 +3446,29 @@ function AstronaX:CreateRaidSearchGUI()
         end
         
         if msg_tt ~= "" or msg_hh ~= "" or msg_mdd ~= "" or msg_rdd ~= "" or comment ~= "" then
-          local msg = l["For %s we are looking for %s%s%s%s %s"]:format(raid, msg_tt, msg_hh, msg_mdd, msg_rdd, comment)
           local chanList = { GetChannelList() }
           
           for i=1, #chanList, 2 do
             if chanList[i+1] == "World" or chanList[i+1] == "world" then
-              SendChatMessage(msg, "CHANNEL" ,COMMON ,chanList[i]); 
-              -- SendChatMessage(msg, "WHISPER" ,COMMON , player); 
+              SendChatMessage(l["Searching for %s, %s"]:format(raid, comment), "CHANNEL" ,COMMON ,chanList[i]); 
+			  -- SendChatMessage(l["Searching for %s, %s"]:format(raid, comment), "WHISPER" ,COMMON , player); 
+			  
+			  if msg_tt ~= "" then
+				SendChatMessage(msg_tt, "CHANNEL" ,COMMON ,chanList[i]); 
+				-- SendChatMessage(msg_tt, "WHISPER" ,COMMON , player); 
+			  end
+			  if msg_hh ~= "" then
+				SendChatMessage(msg_hh, "CHANNEL" ,COMMON ,chanList[i]); 
+				-- SendChatMessage(msg_hh, "WHISPER" ,COMMON , player); 
+			  end
+			  if msg_mdd ~= "" then
+				SendChatMessage(msg_mdd, "CHANNEL" ,COMMON ,chanList[i]); 
+				-- SendChatMessage(msg_mdd, "WHISPER" ,COMMON , player); 
+			  end
+			  if msg_rdd ~= "" then
+				SendChatMessage(msg_rdd, "CHANNEL" ,COMMON ,chanList[i]); 
+				-- SendChatMessage(msg_rdd, "WHISPER" ,COMMON , player); 
+			  end
             end
           end
         else

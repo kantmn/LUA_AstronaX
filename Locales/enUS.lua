@@ -195,7 +195,7 @@ l:RegisterTranslations("enUS", function() return {
    ["Instance has ID"] = "Instance has ID",
    ["Instance unvisited"] = "Stance not yet visited",
    ["No better Gear available"] = "No better Gear available",
-   ["For %s we are looking for %s%s%s%s %s"] = "For %s looking for %s%s%s%s %s",
+   ["Searching for %s, %s"] = "Searching for %s, %s",
    ["Requirements and Requests:"] = "Requirements and Comments",
    ["Raid Member Search"] = "Raid member search",
    ["Search"] = "Search",
@@ -230,6 +230,7 @@ l:RegisterTranslations("enUS", function() return {
    ["spell_Vampirumarmung"] = "Vampiric Embrace",
    ["spell_Inneres Feuer"] = "Inner Fire",
    ["spell_Rüstung"] = "Armor",
+   ["rüstung"] = "armor",
    ["spell_Magie fokussieren"] = "Focus Magic",
    ["spell_Horn des Winters"] = "Horn of Winter",
    ["spell_Aspekt"] = "Aspect",
@@ -241,4 +242,5 @@ l:RegisterTranslations("enUS", function() return {
    ["spell_ruf"] = "Shout",
    ["herbalism"] = "Find Herbs",
    ["minerals"] = "Find Minerals",
+   ["or"] = "or",
 } end)
