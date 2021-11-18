@@ -943,6 +943,7 @@ function AstronaX:OnEnable()
   self:RegisterEvent("PLAYER_ENTERING_WORLD")
   self:RegisterEvent("PLAYER_LEVEL_UP")
   self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+	self:RegisterEvent("PLAYER_LOGIN")
 	self:RegisterEvent("PLAYER_LOGOUT")
   self:RegisterEvent("PLAYER_MONEY")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -961,7 +962,6 @@ function AstronaX:OnEnable()
 	self:RegisterEvent("TRADE_SKILL_SHOW")
 	self:RegisterEvent("UNIT_AURA")
 	self:RegisterEvent("UNIT_MANA")
-	self:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 	self:RegisterEvent("UPDATE_FACTION")
 	self:RegisterEvent("UPDATE_INSTANCE_INFO")
 	self:RegisterEvent("ZONE_CHANGED")
@@ -1033,42 +1033,66 @@ function AstronaX:START_LOOT_ROLL(rollID)
   end
 end
 
-function AstronaX:UNIT_SPELLCAST_SUCCEEDED(caster, spellname, spellrank)	
-	if spellname == l['herbalism'] then
-		self:Update_Professions(spellname)
-	end
-	if spellname == l['minerals'] then
-		self:Update_Professions(spellname)
+function AstronaX:CollectProfessions()
+	local i = 1
+	while i < 20 do
+		local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL)
+		if not spellName then
+			do break end
+		end
+
+		local spellID = GetSpellLink(spellName):match("spell:%d+"):gsub("spell:", "")
+		spellID = tonumber(spellID)
+		if 
+			spellID == 51306 or	-- Ingenieurskunst
+			spellID == 45363 or	-- Inschriftenkunde
+			spellID == 51309 or	-- Schneiderei
+			spellID == 51313 or	-- Verzauberkunst
+			spellID == 51304 or	-- Alchemie
+			spellID == 51311 or	-- Juwelenschleifen
+			spellID == 51302 or	-- Lederverarbeitung
+			-- spellID == 50310 or	-- Bergbau
+			spellID == 51300 or	-- Schmiedekunst
+			spellID == 50305 or	-- Kürschnerei
+			spellID == 2580 or	-- Mineraliensuche
+			spellID == 2383	-- Kräutersuche
+		then
+			self:Update_Professions(spellName, "|T"..GetSpellTexture(i,BOOKTYPE_SPELL)..":16|t")
+		end
+
+		i = i + 1
 	end
 end
 
 function AstronaX:TRADE_SKILL_SHOW()
-	local tradeskillName, currentLevel, maxLevel = GetTradeSkillLine();
-	
-	if tradeskillName ~= nil then
-		self:Update_Professions(tradeskillName)
-	end
+	self:CollectProfessions()
 end
 
-function AstronaX:Update_Professions(tradeskillName)
-	if AstronaXDB[player]["professions_1_name"] == nil or AstronaXDB[player]["professions_1_name"] == tradeskillName then
-		AstronaXDB[player]["professions_1_name"] = tradeskillName
-		AstronaXDB[player]["professions_1_currentLevel"] = currentLevel
-		AstronaXDB[player]["professions_1_maxLevel"] = maxLevel
-	else
-		if AstronaXDB[player]["professions_2_name"] == nil or AstronaXDB[player]["professions_2_name"] == tradeskillName then
-			AstronaXDB[player]["professions_2_name"] = tradeskillName
-			AstronaXDB[player]["professions_2_currentLevel"] = currentLevel
-			AstronaXDB[player]["professions_2_maxLevel"] = maxLevel
+function AstronaX:Update_Professions(tradeSkillName, tradeSkillTexture)
+	if tradeSkillName ~= nil then
+		if AstronaXDB[player]["professions_1_name"] == nil or AstronaXDB[player]["professions_1_name"] == tradeSkillName then
+			AstronaXDB[player]["professions_1_name"] = tradeSkillName
+			AstronaXDB[player]["professions_1_texture"] = tradeSkillTexture
+			-- AstronaXDB[player]["professions_1_currentLevel"] = currentLevel
+			-- AstronaXDB[player]["professions_1_maxLevel"] = maxLevel
 		else
-		-- profession has changed, update first, and clear sec, on next profession open this is fixed
-			AstronaXDB[player]["professions_1_name"] = tradeskillName
-			AstronaXDB[player]["professions_1_currentLevel"] = currentLevel
-			AstronaXDB[player]["professions_1_maxLevel"] = maxLevel
-			
-			AstronaXDB[player]["professions_2_name"] = nil
-			AstronaXDB[player]["professions_2_currentLevel"] = nil
-			AstronaXDB[player]["professions_2_maxLevel"] = nil
+			if AstronaXDB[player]["professions_2_name"] == nil or AstronaXDB[player]["professions_2_name"] == tradeSkillName then
+				AstronaXDB[player]["professions_2_name"] = tradeSkillName
+				AstronaXDB[player]["professions_2_texture"] = tradeSkillTexture
+				-- AstronaXDB[player]["professions_2_currentLevel"] = currentLevel
+				-- AstronaXDB[player]["professions_2_maxLevel"] = maxLevel
+			else
+			-- profession has changed, update first, and clear sec, on next profession open this is fixed
+				AstronaXDB[player]["professions_1_name"] = tradeSkillName
+				AstronaXDB[player]["professions_1_texture"] = tradeSkillTexture
+				-- AstronaXDB[player]["professions_1_currentLevel"] = currentLevel
+				-- AstronaXDB[player]["professions_1_maxLevel"] = maxLevel
+				
+				AstronaXDB[player]["professions_2_name"] = nil
+				AstronaXDB[player]["professions_2_texture"] = nil
+				-- AstronaXDB[player]["professions_2_currentLevel"] = nil
+				-- AstronaXDB[player]["professions_2_maxLevel"] = nil
+			end
 		end
 	end
 end
@@ -1080,6 +1104,8 @@ function AstronaX:CHAT_MSG_CHANNEL(msg, author, _, _, _, _, _, _, channel_name, 
   if AstronaXDB[player]["twcrs"] == 1 then
     self:InformOnRaidSearchRequests(msg, author, channel_name)
   end
+  
+  self:OnTextUpdate();
 end
 
 function AstronaX:CHAT_MSG_WHISPER(msg, unit)
@@ -1231,6 +1257,10 @@ function AstronaX:PLAYER_FLAGS_CHANGED(unit)
   end
 end
 
+function AstronaX:PLAYER_LOGIN()
+	self:CollectProfessions()
+end
+
 function AstronaX:PLAYER_LOGOUT()
   Recount:ResetData()
 	self:UpdateTalents()
@@ -1259,7 +1289,9 @@ function AstronaX:PLAYER_REGEN_ENABLED()
     self:GetGroupStats()
   end
   
-  self:GetRaidBlocks()
+	self:GetRaidBlocks()
+	self:GetDailyStatus()
+	self:UpdateWeekly()
 end
 
 function AstronaX:PLAYER_REGEN_DISABLED()
@@ -2037,7 +2069,6 @@ function AstronaX:AlertOnMissingBuff(spell,soundpath)
   end
 end
 
-
 function AstronaX:GetUnitAuraUpdates()
 	if isInCombat() and isInGroup() and GetClassName() == "PRIEST" then
     if self:CheckIfSpellIsPresent(l["spell_Schattengestalt"], "player") ~= false then
@@ -2649,14 +2680,14 @@ function AstronaX:OnTooltipUpdate()
           
 
 		  local professions = "|T"..unknownSpecIcon..":16|t "
-		  if profession_icons[v["professions_1_name"]] ~= nil then
-			professions = "|T"..profession_icons[v["professions_1_name"]]..":16|t "
+		  if v["professions_1_name"] ~= nil and v["professions_1_texture"] ~= nil then
+			professions = v["professions_1_texture"].." "
 		  end
 		  
-		  if profession_icons[v["professions_2_name"]] ~= nil then
-			professions = professions.."|T"..profession_icons[v["professions_2_name"]]..":16|t "
+		  if v["professions_2_name"] ~= nil and v["professions_2_texture"] ~= nil then
+			professions = professions..v["professions_2_texture"]
 		  else
-			professions = professions.."|T"..unknownSpecIcon..":16|t "
+			professions = professions.."|T"..unknownSpecIcon..":16|t"
 		  end
 
           local cols = {}      
