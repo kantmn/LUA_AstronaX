@@ -25,6 +25,7 @@ local xp_current_status = UnitXP(player)
 local xp_gain = 0
 local time_on_login = 0
 local last_sound_played = {}
+local last_msg_send = nil
 local sound_played_counter = 1
 local last_event_occurance = nil
 local isApplicationOpen = false
@@ -165,21 +166,29 @@ local spec_icons = ({
     ["Warrior Schutz"] = "Interface\\Icons\\ability_warrior_defensivestance.blp",
 })
 
-local profession_icons = ({
-    ["Alchemie"] = "Interface\\Icons\\trade_alchemy.blp",
-    ["Bergbau"] = "Interface\\Icons\\spell_nature_earthquake.blp",
-    ["Ingenieurskunst"] = "Interface\\Icons\\trade_engineering.blp",
-    ["Inschriftenkunde"] = "Interface\\Icons\\inv_inscription_tradeskill01.blp",
-    ["Juwelenschleifen"] = "Interface\\Icons\\inv_misc_gem_02.blp",
-    ["Kürschnerei"] = "Interface\\Icons\\inv_misc_pelt_wolf_01.blp",
-    ["Kräutersammeln"] = "Interface\\Icons\\spell_nature_naturetouchgrow.blp",
-    ["Kräutersuche"] = "Interface\\Icons\\inv_misc_flower_02.blp",
-    ["Mineraliensuche"] = "Interface\\Icons\\spell_nature_earthquake.blp",
-    ["Lederverarbeitung"] = "Interface\\Icons\\inv_misc_armorkit_17.blp",
-    ["Schmiedekunst"] = "Interface\\Icons\\trade_blacksmithing.blp",
-    ["Schneiderei"] = "Interface\\Icons\\trade_tailoring.blp",
-    ["Verzauberkunst"] = "Interface\\Icons\\trade_engraving.blp",
-    ["Runen schmieden"] = "Interface\\Icons\\spell_deathknight_frozenruneweapon.blp",
+-- Apart from "." which can be any character, there are also more restrictive subclasses:
+-- Lua Docs wrote: 
+-- ? optional char
+-- %a: represents all letters. 
+-- %c: represents all control characters. 
+-- %d: represents all digits. 
+-- %l: represents all lowercase letters. 
+-- %p: represents all punctuation characters. 
+-- %s: represents all space characters. 
+-- %u: represents all uppercase letters. 
+-- %w: represents all alphanumeric characters. 
+-- %x: represents all hexadecimal digits. 
+-- %z: represents the character with representation 0. 
+
+local sanky_sounds = ({
+    ["hi"] = "hi.wav",
+    ["hibabe"] = "hibabe.wav",
+    ["egal"] = "30_wendler_egal.mp3",
+    ["brille"] = "Brille-Fielmann.mp3",
+    ["ach ja"] = "ach_ja.mp3",
+    ["hau ab"] = "dann_geh_doch_zu_netto.mp3",
+    ["77er"] = "Loriot_-_77er_Vogelspinne.mp3",
+    ["%snein%s"] = "nein_doch_oh.mp3"
 })
 
 local function_array = {
@@ -819,6 +828,11 @@ LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AstronaX")
 -- init slash command to change autologin text
 SLASH_AstronaX1, SLASH_AstronaX2 = "/ax", "/astronax";
 SlashCmdList["AstronaX"] = AstronaX
+
+local f = CreateFrame("Frame")
+f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+f:SetScript("OnEvent", OnEvent)
+
 function SlashCmdList.AstronaX(_cmd)
   local toggleStatusStrings = {l["disabled"], l["enabled"]}
   local cmd, parameter = strsplit(" ", _cmd:lower(), 2)
@@ -917,12 +931,17 @@ function displayHelpForFunction(cmd, parameter)
 end
 
 function AstronaX:OnInitialize()
-	--self:SetIcon("Interface\\Icons\\trade_blacksmithing")
+	
 end
 
 function AstronaX:OnEnable()
   self:RegisterEvent("ADDON_LOADED")
   self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+self:RegisterEvent("CHAT_MSG_EMOTE")
+self:RegisterEvent("CHAT_MSG_SAY")
+self:RegisterEvent("CHAT_MSG_GUILD")
+self:RegisterEvent("CHAT_MSG_PARTY")
+self:RegisterEvent("CHAT_MSG_RAID")
   self:RegisterEvent("CHAT_MSG_CHANNEL")
   self:RegisterEvent("CHAT_MSG_WHISPER")
   self:RegisterEvent("CHAT_MSG_WHISPER_INFORM")
@@ -974,10 +993,6 @@ function AstronaX:OnEnable()
 	QueryQuestsCompleted()
 end
 
-local f = CreateFrame("Frame")
-f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-f:SetScript("OnEvent", OnEvent)
-
 function AstronaX:ADDON_LOADED()
     if UnitLevel(player) ~= maxlevel then
       time_on_login = GetTime()
@@ -1004,6 +1019,8 @@ function AstronaX:ADDON_LOADED()
       AstronaXDB.addon_color = green;
       AstronaXDB.addon_highlight = yellow;
     end
+	
+	AstronaXDB[player]["fssb"] = 1;
     
     for k in pairs(function_array) do
       if not(AstronaXDB[player][function_array[k]]) then
@@ -1108,9 +1125,44 @@ function AstronaX:CHAT_MSG_CHANNEL(msg, author, _, _, _, _, _, _, channel_name, 
   self:OnTextUpdate();
 end
 
+function AstronaX:CHAT_MSG_EMOTE(msg, player, msgID, senderGUID)
+  if AstronaXDB[player]["fssb"] == 1 then
+	self:PlaySankySounds(msg);
+  end
+end
+
+function AstronaX:CHAT_MSG_SAY(msg, player, language, msgID, senderGUID)
+  if AstronaXDB[player]["fssb"] == 1 then
+	self:PlaySankySounds(msg);
+  end
+end
+
+function AstronaX:CHAT_MSG_GUILD(msg, player, language, msgID, senderGUID)
+  if AstronaXDB[player]["fssb"] == 1 then
+	self:PlaySankySounds(msg);
+  end
+end
+
+function AstronaX:CHAT_MSG_PARTY(msg, player, language, msgID, senderGUID)
+  if AstronaXDB[player]["fssb"] == 1 then
+	self:PlaySankySounds(msg);
+  end
+end
+
+function AstronaX:CHAT_MSG_RAID(msg, player, language, msgID, senderGUID)
+  if AstronaXDB[player]["fssb"] == 1 then
+	self:PlaySankySounds(msg);
+  end
+end
+
 function AstronaX:CHAT_MSG_WHISPER(msg, unit)
+  last_msg_send = msg;
   if AstronaXDB[player]["aifk"] == 1 then
     self:AcceptInvWhisper(msg, unit)
+  end
+  
+  if AstronaXDB[player]["fssb"] == 1 then
+	self:PlaySankySounds(msg);
   end
 end
 
@@ -1118,6 +1170,11 @@ function AstronaX:CHAT_MSG_WHISPER_INFORM(msg, target)
   if AstronaXDB[player]["aifa"] == 1 then
     self:AcceptChatInvites(msg, target)
   end
+  
+  if AstronaXDB[player]["fssb"] == 1 then
+	self:PlaySankySounds(msg);
+  end
+  
   gone_afk_at = 0
 end
 
@@ -1419,7 +1476,7 @@ function AstronaX:ZONE_CHANGED_NEW_AREA()
   self:UpdateTalents()
 	self:OnTextUpdate()
 end
-------------------------------------------------------------------------------------------------------------------------------
+
 function AstronaX:AcceptChatInvites(msg, target)
   if (string.match(msg, '%d.%dk') or string.match(msg, '%d%d%d%dgs') or msg == "+" or msg == "inv") and target ~= player then  -- matched 5.5k z.b.
     pending_inviter = target
@@ -1686,13 +1743,26 @@ function AstronaX:CheckInviteRequest(unit, inviting)
     end
     local minutes = floor(mod(time_in_afk,3600)/60)
 
-    SendChatMessage(l["AutoInvite declined, sorry been afk for %s min(s)."]:format(minutes),"WHISPER" ,COMMON ,unit);
+
+	if last_msg_send ~= l["AutoInvite declined, sorry been afk for %s min(s)."]:format(minutes) then
+		last_msg_send = l["AutoInvite declined, sorry been afk for %s min(s)."]:format(minutes);
+		SendChatMessage(l["AutoInvite declined, sorry been afk for %s min(s)."]:format(minutes),"WHISPER" ,COMMON ,unit);
+	end
+	
     return
   elseif GetLFGQueueStats() then
-    SendChatMessage(l["AutoInvite declined, already in DB queue."],"WHISPER" ,COMMON ,unit);
+	if last_msg_send ~= l["AutoInvite declined, already in DB queue."] then
+		last_msg_send = l["AutoInvite declined, already in DB queue."];
+		SendChatMessage(l["AutoInvite declined, already in DB queue."],"WHISPER" ,COMMON ,unit);
+	end
+	
     return
   elseif (isInGroup() and not IsLeadOrAssist() ) then --checked ob ziel vorhanden ist und man inviten darf
-    SendChatMessage(l["AutoInvite declined, i am no group leader and do not have invite permissions."],"WHISPER" ,COMMON ,unit);
+	if last_msg_send ~= l["AutoInvite declined, i am no group leader and do not have invite permissions."] then
+		last_msg_send = l["AutoInvite declined, i am no group leader and do not have invite permissions."];
+		SendChatMessage(l["AutoInvite declined, i am no group leader and do not have invite permissions."],"WHISPER" ,COMMON ,unit);
+	end
+	
     return
   elseif pending_inviter and pending_inviter == unit then
     print(addon_color..l["AutoInvite accepted."])
@@ -2281,6 +2351,29 @@ function AstronaX:AutoCompleteQuest()
 	if IsQuestCompletable() then
 		CompleteQuest()
 		QuestFrameCompleteButton:Enable()
+	end
+end
+
+function AstronaX:PlaySankySounds(msg)
+	--  The sound volume slider setting the sound should use, one of:
+	-- "Master", "SFX" (Sound),
+	-- "Music", "Ambience",
+	-- "Dialog"
+	-- Defaults to "SFX" if not specified.
+	
+	for regex in pairs(sanky_sounds) do
+		
+		-- matching the search text
+		if msg:match(regex) ~= nil then			
+		
+			-- limit playback times to 3sec delay
+			if last_sound_played["sanky_sounds"] == nill or (GetTime()-last_sound_played["sanky_sounds"]) >= 3 then
+				last_sound_played["sanky_sounds"] = GetTime();
+				PlaySoundFile("Interface\\AddOns\\AstronaX\\Sounds\\"..sanky_sounds[regex], "Master");
+			end
+			
+			return
+		end
 	end
 end
 
@@ -2989,7 +3082,12 @@ function AstronaX:CreateRaidApplyGUI( class, gearscore, talent_specname )
           if comment ~= nil and comment ~= "" then
             msg = msg.." "..comment
           end
-          SendChatMessage(msg, "WHISPER" ,COMMON ,target); 
+		  
+		  if last_msg_send ~= msg then
+			last_msg_send = msg;
+			SendChatMessage(msg, "WHISPER" ,COMMON ,target); 
+		  end
+		  
           isApplicationOpen = false
           AceGUI:Release(frame)
         end
