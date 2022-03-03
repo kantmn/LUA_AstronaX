@@ -101,15 +101,15 @@ local revival_responses = {
 }
 
 local short_spec_names = ({
-    ["Deathknight Blut"] = "DKTank",
-    ["Deathknight Frost"] = "FrostDK",
+    ["Deathknight Blut"] = "BDK",
+    ["Deathknight Frost"] = "FDK",
     ["Deathknight Unheilig"] = "UHDK",
-    ["Druid Gleichgewicht"] = "Boomkin",
-    ["Druid Wilder Kampf"] = "FeralDruid",
+    ["Druid Gleichgewicht"] = "Eule",
+    ["Druid Wilder Kampf"] = "Feral",
     ["Druid Wiederherst."] = "RestoDruid",
-    ["Hunter Tierherrschaft"] = "BM-Hunter",
-    ["Hunter Treffsicherheit"] = "MM-Hunter",
-    ["Hunter Überleben"] = "SV-Hunter",
+    ["Hunter Tierherrschaft"] = "BM",
+    ["Hunter Treffsicherheit"] = "MM",
+    ["Hunter Überleben"] = "SV",
     ["Mage Arkan"] = "ArcanMage",
     ["Mage Feuer"] = "FireMage",
     ["Mage Frost"] = "FrostMage",
@@ -119,7 +119,7 @@ local short_spec_names = ({
     ["Priest Disziplin"] = "Diszi",
     ["Priest Heilig"] = "HolyPriest",
     ["Priest Schatten"] = "Shadow",
-    ["Rogue Meucheln"] = "Mutilate",
+    ["Rogue Meucheln"] = "Muti",
     ["Rogue Kampf"] = "Combat",
     ["Rogue Täuschung"] = "PVP",
     ["Shaman Elementar"] = "Ele",
@@ -167,7 +167,6 @@ local spec_icons = ({
 })
 
 -- Apart from "." which can be any character, there are also more restrictive subclasses:
--- Lua Docs wrote: 
 -- ? optional char
 -- %a: represents all letters. 
 -- %c: represents all control characters. 
@@ -179,16 +178,31 @@ local spec_icons = ({
 -- %w: represents all alphanumeric characters. 
 -- %x: represents all hexadecimal digits. 
 -- %z: represents the character with representation 0. 
+-- s = "abc"
+-- print(s:match("a.c")) --returns "abc"
+-- print(s:match("a(.)c")) --returns "b"
+-- s = "123 hello world!"
+-- print(s:match("^he..")) --returns "hell"
+-- print(s:match("^he..")) --returns nil
 
 local sanky_sounds = ({
-    ["hi"] = "hi.wav",
-    ["hibabe"] = "hibabe.wav",
+    ["^hi .."] = "hi.wav",
+    ["^bye? .."] = "bye_love.wav",
+    ["^ciao .."] = "bye_love.wav",
+    ["^tschuess .."] = "bye_love.wav",
+    ["^tschüss .."] = "bye_love.wav",
+    ["^hey .."] = "HIBABE.WAV",
+    ["%sklo%s"] = "Jetzt gehn wir nochma alle aufs Klo.ogg",
+    ["%sunterbrechen%s"] = "pa_unterbrechen.mp3",
+    ["%suprise%s"] = "Suprise Motherfcker Sound Effect.mp3",
+    ["%süberraschung%s"] = "Suprise Motherfcker Sound Effect.mp3",
     ["egal"] = "30_wendler_egal.mp3",
     ["brille"] = "Brille-Fielmann.mp3",
     ["ach ja"] = "ach_ja.mp3",
     ["hau ab"] = "dann_geh_doch_zu_netto.mp3",
     ["77er"] = "Loriot_-_77er_Vogelspinne.mp3",
-    ["%snein%s"] = "nein_doch_oh.mp3"
+    ["%snein%s"] = "nein_doch_oh.mp3",
+	["^freeze.."] = "freeze_mf.mp3"
 })
 
 local function_array = {
@@ -931,7 +945,9 @@ function displayHelpForFunction(cmd, parameter)
 end
 
 function AstronaX:OnInitialize()
-	
+	if AstronaXDB[player]["fssb"] == nil then
+		AstronaXDB[player]["fssb"] = 1;
+	end
 end
 
 function AstronaX:OnEnable()
@@ -995,7 +1011,7 @@ end
 
 function AstronaX:ADDON_LOADED()
     if UnitLevel(player) ~= maxlevel then
-      time_on_login = GetTime()
+      time_on_login = GetTime();
     end
 
     if(not AstronaXDB) then
@@ -1014,13 +1030,12 @@ function AstronaX:ADDON_LOADED()
       AstronaXDB[player]["arol"] = 0 --auto roll on loot
       AstronaXDB[player]["staui"] = 0 --auto sell junk and unwanted items
       AstronaXDB[player]["farclip_toggle"] = 0 --auto loot method
+	  AstronaXDB[player]["fssb"] = 1;
     
       AstronaXDB.auto_inv_whisper_text = "ainv";
       AstronaXDB.addon_color = green;
       AstronaXDB.addon_highlight = yellow;
     end
-	
-	AstronaXDB[player]["fssb"] = 1;
     
     for k in pairs(function_array) do
       if not(AstronaXDB[player][function_array[k]]) then
@@ -1126,33 +1141,33 @@ function AstronaX:CHAT_MSG_CHANNEL(msg, author, _, _, _, _, _, _, channel_name, 
 end
 
 function AstronaX:CHAT_MSG_EMOTE(msg, player, msgID, senderGUID)
-  if AstronaXDB[player]["fssb"] == 1 then
+  -- if AstronaXDB[player]["fssb"] ~= nil and AstronaXDB[player]["fssb"] == 1 then
 	self:PlaySankySounds(msg);
-  end
+  -- end
 end
 
 function AstronaX:CHAT_MSG_SAY(msg, player, language, msgID, senderGUID)
-  if AstronaXDB[player]["fssb"] == 1 then
+  -- if AstronaXDB[player]["fssb"] ~= nil and AstronaXDB[player]["fssb"] == 1 then
 	self:PlaySankySounds(msg);
-  end
+  -- end
 end
 
 function AstronaX:CHAT_MSG_GUILD(msg, player, language, msgID, senderGUID)
-  if AstronaXDB[player]["fssb"] == 1 then
+  -- if AstronaXDB[player]["fssb"] ~= nil and AstronaXDB[player]["fssb"] == 1 then
 	self:PlaySankySounds(msg);
-  end
+  -- end
 end
 
 function AstronaX:CHAT_MSG_PARTY(msg, player, language, msgID, senderGUID)
-  if AstronaXDB[player]["fssb"] == 1 then
+  -- if AstronaXDB[player]["fssb"] ~= nil and AstronaXDB[player]["fssb"] == 1 then
 	self:PlaySankySounds(msg);
-  end
+  -- end
 end
 
 function AstronaX:CHAT_MSG_RAID(msg, player, language, msgID, senderGUID)
-  if AstronaXDB[player]["fssb"] == 1 then
+  -- if AstronaXDB[player]["fssb"] == 1 then
 	self:PlaySankySounds(msg);
-  end
+  -- end
 end
 
 function AstronaX:CHAT_MSG_WHISPER(msg, unit)
@@ -1352,7 +1367,7 @@ function AstronaX:PLAYER_REGEN_ENABLED()
 end
 
 function AstronaX:PLAYER_REGEN_DISABLED()
-  self:FixBrokenCombatLog()
+  -- self:FixBrokenCombatLog()
 end
 
 function AstronaX:PLAYER_TARGET_CHANGED()
@@ -1398,15 +1413,11 @@ function AstronaX:QUEST_QUERY_COMPLETE()
 end
 
 function AstronaX:RAID_ROSTER_UPDATE()
-  if GetNumRaidMembers() <= 10 or GetNumRaidMembers() == 0 then
-    SetCVar("showLootSpam", 1)
-    if AstronaXDB[player]["sals"] == 1 then
-      SetCVar("showLootSpam", 0)
-    end
-  else
-    if AstronaXDB[player]["sals"] == 1  then
-      SetCVar("showLootSpam", 0)
-    end
+  SetCVar("showLootSpam", 0)
+  if AstronaXDB[player]["sals"] == 1 then
+	if GetNumRaidMembers() <= 10 or GetNumRaidMembers() == 0 then  
+		SetCVar("showLootSpam", 1)
+	end
   end
   --isRaid()
 end
@@ -1601,7 +1612,7 @@ function AstronaX:AutoRollOnLoot(rollID)
   local rollType = 4 -- default nothing
   local rollTypeStrings = {l["needed"],l["greeded"],l["dizzed"],l["will manually select"]}
   
-	if UnitLevel(player) == maxLevel and UnitIsDeadOrGhost(player) == nil and AstronaXDB[player]["ilvl_minimum"] > 200  then
+	if UnitLevel(player) == maxLevel and UnitIsDeadOrGhost(player) == nil and AstronaXDB[player]["ilvl_minimum"] > 200 then
 		-- grüne items wenn möglich immer dissen
 		if quality == 2 then -- 2 = grün
 			if canDisenchant then
@@ -1648,7 +1659,7 @@ function AstronaX:AutoRollOnLoot(rollID)
 		end
 	end
 
-  if rollType < 4 then
+  if rollType < 4 and GetGroupCount() <= 10 then
     RollOnLoot(rollID,rollType);
   end
   local quality_color = select(4, GetItemQualityColor(quality))
@@ -2194,7 +2205,9 @@ function AstronaX:GetWeeklyStatus(db_player)	-- returns true if weekly hc has be
 end
 
 function AstronaX:AnnounceRaidSearch(author,color,raid, minIlvl)
-  PlaySoundFileAstronax("Sound\\Interface\\MagicClick.wav")
+  if GetGroupType() == "player" then
+	PlaySoundFileAstronax("Sound\\Interface\\MagicClick.wav")
+  end
   print(addon_color.."RaidWatch: "..addon_highlight..author..green.." "..l["is looking for"].." "..color..raid..green)
 end
 
@@ -2241,8 +2254,10 @@ function AstronaX:InformOnRaidSearchRequests(msg, author, channel_name)
     self:CheckRaidIDandRelevance(author, msg, 226, "|cff33cccc", '[Uu]lduar%s*2[0-9]', "Ulduar;25;2", "Ulduar")
     self:CheckRaidIDandRelevance(author, msg, 232, "|cffff6600", '[Oo][Nn][IiYy]%s*1[0-9]', "Onyxias Hort;10;1", "Ony")
     self:CheckRaidIDandRelevance(author, msg, 245, "|cffff6600", '[Oo][Nn][IiYy]%s*2[0-9]', "Onyxias Hort;25;2", "Ony")
-    self:CheckRaidIDandRelevance(author, msg, 271, "|cffff5050", '[Rr][Uu][Bb][IiYy]%s*1[089]', "Das Rubinsanktum;10;1", "Rubi")
-    self:CheckRaidIDandRelevance(author, msg, 284, "|cffff5050", '[Rr][Uu][Bb][IiYy]%s*[1-2][0-9]', "Das Rubinsanktum;25;2", "Rubi")
+    self:CheckRaidIDandRelevance(author, msg, 271, "|cffff5050", '[Rr][Uu][Bb][IiYy]%s*[6-9]', "Das Rubinsanktum;10;1", "Rubi")
+    self:CheckRaidIDandRelevance(author, msg, 271, "|cffff5050", '[Rr][Uu][Bb][IiYy]%s*10', "Das Rubinsanktum;10;1", "Rubi")
+    self:CheckRaidIDandRelevance(author, msg, 284, "|cffff5050", '[Rr][Uu][Bb][IiYy]%s*1[1-9]', "Das Rubinsanktum;25;2", "Rubi")
+    self:CheckRaidIDandRelevance(author, msg, 284, "|cffff5050", '[Rr][Uu][Bb][IiYy]%s*2[0-5]', "Das Rubinsanktum;25;2", "Rubi")
     self:CheckRaidIDandRelevance(author, msg, 232, "|cff993300", '[Pp][Dd][Kk]%s*1[0-9]', "Prüfung des Kreuzfahrers;10;1", "PdK")
     self:CheckRaidIDandRelevance(author, msg, 245, "|cff993300", '[Pp][Dd][Kk]%s*2[0-9]', "Prüfung des Kreuzfahrers;25;2", "PdK")
     self:CheckRaidIDandRelevance(author, msg, 245, "|cff993300", '[Pp][Dd][Oo][Kk]%s*1[0-9]', "Prüfung des Kreuzfahrers;10;3", "PdoK")
@@ -2686,7 +2701,7 @@ function AstronaX:OnTooltipUpdate()
       -- return AstronaXDB[a]["gearscore"] > AstronaXDB[b]["gearscore"]
     -- end)
 
-    if AstronaXDB[player]["tooltip_chardetails"] == 1 and UnitLevel(player) == maxLevel then
+    if AstronaXDB[player]["tooltip_chardetails"] == 1 then
       local total_money = 0
       for i in pairs(sorted_table) do
         local _, v = sorted_table[i], AstronaXDB[ sorted_table[i] ]
