@@ -10,6 +10,7 @@ Auto Tracking of Daily Heroics and Weekly Raid Quest as well as Weekly 1KW PvP W
 
 Screenshot Section
 -----------------------------------------------------------------------------------------------------------------------------
+TopBar Requires <a href="https://www.wowinterface.com/downloads/info4571-FuBar3.6.5.html">Fubar Broker Version 3+ (Latest for Wotlk)</a> installed otherwise the information are displayed as button next to your minimap
 <img src="https://raw.githubusercontent.com/kantmn/LUA_AstronaX/master/Screenshots/AstronaX_FuBar_Tooltip.png">
 <img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_GUI_Settings_AutoX.png">
 <img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_GUI_Settings_Infos.png">
