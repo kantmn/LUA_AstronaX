@@ -58,6 +58,10 @@ Installation Guide
 Installations Anleitung
 -----------------------------------------------------------------------------------------------------------------------------
     World of Warcraft vollständig beenden
+    TopBar ist optional <a href="https://www.wowinterface.com/downloads/info4571-FuBar3.6.5.html">Fubar Broker Version 3+ (Latest for Wotlk)</a> installierbar andernfalls werden die Informationen als Schaltfläche neben Ihrer Minikarte angezeigt.
+	Gearscore ist erforderlich für uns, daher bitte installieren <a href="https://addons.rising-gods.de/addons/gearscore">GearScore</a>
+	Ace3Lieb ist erforderlich für uns, daher bitte installieren <a href="https://www.wowace.com/projects/ace3/files/440275">Ace3Lib</a>
+	Download and extract them, then put them also inside the Interface/Addons/ folder
     Das Addon herunterladen
         Speichern Sie die .zip/.rar-Dateien unter Downloads / Desktop oder wo immer Sie wollen
     Entpacken der Datei - allgemein bekannt als 'Unzipping'.
