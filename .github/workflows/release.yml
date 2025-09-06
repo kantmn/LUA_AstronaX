@@ -14,7 +14,7 @@ jobs:
       - name: Set date tag
         id: tag
         run: |
-          DATE_TAG=$(date +'%Y.%m.%d')
+          DATE_TAG=$(date +'%Y.%m.%d_%H%M%S')
           echo "DATE_TAG=$DATE_TAG" >> $GITHUB_ENV
 
       - name: Create GitHub Release
