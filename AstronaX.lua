@@ -25,11 +25,10 @@ local xp_current_status = UnitXP(player)
 local xp_gain = 0
 local time_on_login = 0
 local last_sound_played = {}
-local last_msg_send = nil
 local sound_played_counter = 1
 local last_event_occurance = nil
 local isApplicationOpen = false
-    
+
 
 local addon_color  = "|cff009a1a";
 local addon_warning  = red;
@@ -58,12 +57,6 @@ local selectionIds = {
 	40753,	-- emblem ehre
 	40752,	-- heldentum
   43228  -- splitter eines steinbewahrer
-}
-
-local dontRollOn = {
-	'Kaputte Halskette',
-	'Buch der Glyphenbeherrschung' ,
-	"Gefrorene Kugel"
 }
 
 local sellJunkList = {
@@ -101,17 +94,17 @@ local revival_responses = {
 }
 
 local short_spec_names = ({
-    ["Deathknight Blut"] = "BDK",
-    ["Deathknight Frost"] = "FDK",
+    ["Deathknight Blut"] = "BlutTank",
+    ["Deathknight Frost"] = "FrostDK",
     ["Deathknight Unheilig"] = "UHDK",
     ["Druid Gleichgewicht"] = "Eule",
     ["Druid Wilder Kampf"] = "Feral",
-    ["Druid Wiederherst."] = "RestoDruid",
+    ["Druid Wiederherst."] = "Baum",
     ["Hunter Tierherrschaft"] = "BM",
     ["Hunter Treffsicherheit"] = "MM",
     ["Hunter Überleben"] = "SV",
-    ["Mage Arkan"] = "ArcanMage",
-    ["Mage Feuer"] = "FireMage",
+    ["Mage Arkan"] = "ArkanMage",
+    ["Mage Feuer"] = "FeuerMage",
     ["Mage Frost"] = "FrostMage",
     ["Paladin Heilig"] = "HolyPala",
     ["Paladin Schutz"] = "ProtPala",
@@ -119,16 +112,16 @@ local short_spec_names = ({
     ["Priest Disziplin"] = "Diszi",
     ["Priest Heilig"] = "HolyPriest",
     ["Priest Schatten"] = "Shadow",
-    ["Rogue Meucheln"] = "Muti",
+    ["Rogue Meucheln"] = "Mutilate",
     ["Rogue Kampf"] = "Combat",
     ["Rogue Täuschung"] = "PVP",
     ["Shaman Elementar"] = "Ele",
     ["Shaman Verstärk."] = "VS",
-    ["Shaman Wiederherst."] = "RestoShaman",
+    ["Shaman Wiederherst."] = "Resto",
     ["Warlock Gebrechen"] = "Affli",
     ["Warlock Dämonologie"] = "Dämo",
-    ["Warlock Zerstörung"] = "Destro",
-    ["Warrior Waffen"] = "ArmsWarri",
+    ["Warlock Zerstörung"] = "Dest",
+    ["Warrior Waffen"] = "Arms",
     ["Warrior Furor"] = "Fury",
     ["Warrior Schutz"] = "ProtWarri",
 })
@@ -164,45 +157,6 @@ local spec_icons = ({
     ["Warrior Waffen"] = "Interface\\Icons\\ability_rogue_eviscerate.blp",
     ["Warrior Furor"] = "Interface\\Icons\\Ability_Warrior_InnerRage.blp",
     ["Warrior Schutz"] = "Interface\\Icons\\ability_warrior_defensivestance.blp",
-})
-
--- Apart from "." which can be any character, there are also more restrictive subclasses:
--- ? optional char
--- %a: represents all letters. 
--- %c: represents all control characters. 
--- %d: represents all digits. 
--- %l: represents all lowercase letters. 
--- %p: represents all punctuation characters. 
--- %s: represents all space characters. 
--- %u: represents all uppercase letters. 
--- %w: represents all alphanumeric characters. 
--- %x: represents all hexadecimal digits. 
--- %z: represents the character with representation 0. 
--- s = "abc"
--- print(s:match("a.c")) --returns "abc"
--- print(s:match("a(.)c")) --returns "b"
--- s = "123 hello world!"
--- print(s:match("^he..")) --returns "hell"
--- print(s:match("^he..")) --returns nil
-
-local sanky_sounds = ({
-    ["^hi .."] = "hi.wav",
-    ["^bye? .."] = "bye_love.wav",
-    ["^ciao .."] = "bye_love.wav",
-    ["^tschuess .."] = "bye_love.wav",
-    ["^tschüss .."] = "bye_love.wav",
-    ["^hey .."] = "HIBABE.WAV",
-    ["%sklo%s"] = "Jetzt gehn wir nochma alle aufs Klo.ogg",
-    ["%sunterbrechen%s"] = "pa_unterbrechen.mp3",
-    ["%suprise%s"] = "Suprise Motherfcker Sound Effect.mp3",
-    ["%süberraschung%s"] = "Suprise Motherfcker Sound Effect.mp3",
-    ["egal"] = "30_wendler_egal.mp3",
-    ["brille"] = "Brille-Fielmann.mp3",
-    ["ach ja"] = "ach_ja.mp3",
-    ["hau ab"] = "dann_geh_doch_zu_netto.mp3",
-    ["77er"] = "Loriot_-_77er_Vogelspinne.mp3",
-    ["%snein%s"] = "nein_doch_oh.mp3",
-	["^freeze.."] = "freeze_mf.mp3"
 })
 
 local function_array = {
@@ -276,6 +230,7 @@ local l = AceLibrary("AceLocale-2.2"):new("AstronaX")
 local dewdrop = AceLibrary("Dewdrop-2.0")
 
 AstronaX = AceLibrary("AceAddon-2.0"):new("FuBarPlugin-2.0", "AceConsole-2.0", "AceEvent-2.0", "AceDB-2.0")
+--AstronaX.hasIcon = true
 AstronaX.hasNoColor = true
 AstronaX.title = "AstronaX";
 AstronaX.defaultPosition = "CENTER"
@@ -299,12 +254,12 @@ local options = {
         local b = tonumber(addon_color:sub(9, string.len(addon_color)),16) / 255
         return r,g,b
       end,
-      set = function(_,r,g,b) 
+      set = function(_,r,g,b)
         if( r ~= 0 and g ~= 0 and b ~= 0) then
           local rgb = {r*255,g*255,b*255};
           AstronaXDB.addon_color = "|cff"..rgb2Hex(rgb)
           addon_color = AstronaXDB.addon_color
-        end; 
+        end;
       end,
     },
     addon_highlight = {
@@ -317,12 +272,12 @@ local options = {
         local b = tonumber(addon_highlight:sub(9, string.len(addon_highlight)),16) / 255
         return r,g,b
       end,
-      set = function(_,r,g,b) 
+      set = function(_,r,g,b)
         if( r ~= 0 and g ~= 0 and b ~= 0) then
           local rgb = {r*255,g*255,b*255};
           AstronaXDB.addon_highlight = "|cff"..rgb2Hex(rgb)
           addon_highlight = AstronaXDB.addon_highlight
-        end; 
+        end;
       end,
     },
     options_tooltip = {
@@ -842,17 +797,12 @@ LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AstronaX")
 -- init slash command to change autologin text
 SLASH_AstronaX1, SLASH_AstronaX2 = "/ax", "/astronax";
 SlashCmdList["AstronaX"] = AstronaX
-
-local f = CreateFrame("Frame")
-f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-f:SetScript("OnEvent", OnEvent)
-
 function SlashCmdList.AstronaX(_cmd)
   local toggleStatusStrings = {l["disabled"], l["enabled"]}
   local cmd, parameter = strsplit(" ", _cmd:lower(), 2)
   local displayHelp = false
   local parameterIsDigit = false
-  
+
   ---------------------------------------------------------------
   if ( parameter == nil) then
     displayHelp = true
@@ -945,19 +895,12 @@ function displayHelpForFunction(cmd, parameter)
 end
 
 function AstronaX:OnInitialize()
-	if AstronaXDB[player]["fssb"] == nil then
-		AstronaXDB[player]["fssb"] = 1;
-	end
+	--self:SetIcon("Interface\\Icons\\trade_blacksmithing")
 end
 
 function AstronaX:OnEnable()
   self:RegisterEvent("ADDON_LOADED")
   self:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
-self:RegisterEvent("CHAT_MSG_EMOTE")
-self:RegisterEvent("CHAT_MSG_SAY")
-self:RegisterEvent("CHAT_MSG_GUILD")
-self:RegisterEvent("CHAT_MSG_PARTY")
-self:RegisterEvent("CHAT_MSG_RAID")
   self:RegisterEvent("CHAT_MSG_CHANNEL")
   self:RegisterEvent("CHAT_MSG_WHISPER")
   self:RegisterEvent("CHAT_MSG_WHISPER_INFORM")
@@ -978,7 +921,6 @@ self:RegisterEvent("CHAT_MSG_RAID")
   self:RegisterEvent("PLAYER_ENTERING_WORLD")
   self:RegisterEvent("PLAYER_LEVEL_UP")
   self:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
-	self:RegisterEvent("PLAYER_LOGIN")
 	self:RegisterEvent("PLAYER_LOGOUT")
   self:RegisterEvent("PLAYER_MONEY")
   self:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -988,13 +930,10 @@ self:RegisterEvent("CHAT_MSG_RAID")
 	self:RegisterEvent("PLAYER_UNGHOST")
   self:RegisterEvent("PLAYER_XP_UPDATE")
 	self:RegisterEvent("QUEST_TURNED_IN")
-	self:RegisterEvent("QUEST_COMPLETE")
-	self:RegisterEvent("QUEST_PROGRESS")
 	self:RegisterEvent("QUEST_QUERY_COMPLETE")
 	self:RegisterEvent("RAID_INSTANCE_WELCOME")
 	self:RegisterEvent("RAID_ROSTER_UPDATE")
 	self:RegisterEvent("RESURRECT_REQUEST")
-	self:RegisterEvent("TRADE_SKILL_SHOW")
 	self:RegisterEvent("UNIT_AURA")
 	self:RegisterEvent("UNIT_MANA")
 	self:RegisterEvent("UPDATE_FACTION")
@@ -1002,16 +941,70 @@ self:RegisterEvent("CHAT_MSG_RAID")
 	self:RegisterEvent("ZONE_CHANGED")
 	self:RegisterEvent("ZONE_CHANGED_INDOORS")
 	self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-  SetCVar("cameraDistanceMax", 60)	
+  SetCVar("cameraDistanceMax", 60)
+
+  if(not AstronaXDB[player] ) then
+      AstronaXDB[player] = {}
+  end
+
+  if(not AstronaXDB[player][selectionIds[1]] ) then
+      AstronaXDB[player][selectionIds[1]] = 0
+  end
+  if(not AstronaXDB[player][selectionIds[2]] ) then
+      AstronaXDB[player][selectionIds[2]] = 0
+  end
+  if(not AstronaXDB[player][selectionIds[3]] ) then
+      AstronaXDB[player][selectionIds[3]] = 0
+  end
+  if(not AstronaXDB[player][selectionIds[4]] ) then
+      AstronaXDB[player][selectionIds[4]] = 0
+  end
+  if(not AstronaXDB[player][selectionIds[52]] ) then
+      AstronaXDB[player][selectionIds[5]] = 0
+  end
+  if(not AstronaXDB[player][selectionIds[6]] ) then
+      AstronaXDB[player][selectionIds[6]] = 0
+  end
+      
+  if(not AstronaXDB[player]["talentspec_primary"] ) then
+      AstronaXDB[player]["talentspec_primary"] = "none"
+  end
+  if(not AstronaXDB[player]["talentspec_secondary"] ) then
+      AstronaXDB[player]["talentspec_secondary"] = "none"
+  end
+
+  if(not AstronaXDB[player]["class"] ) then
+      AstronaXDB[player]["class"] = "none"
+  end
+  if(not AstronaXDB[player]["gearscore"] ) then
+      AstronaXDB[player]["gearscore"] = 0
+  end
+  if(not AstronaXDB[player]["armor"] ) then
+      AstronaXDB[player]["armor"] = 0
+  end
+  if(not AstronaXDB[player]["honor"] ) then
+      AstronaXDB[player]["honor"] = 0
+  end
+  if(not AstronaXDB[player]["money"] ) then
+      AstronaXDB[player]["money"] = 0
+  end
+  if(not AstronaXDB[player]["title"] ) then
+      AstronaXDB[player]["title"] = "noTitle"
+  end
+
   if AstronaXDB[player] then
     self:UpdateTalents()
   end
 	QueryQuestsCompleted()
 end
 
+local f = CreateFrame("Frame")
+f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+f:SetScript("OnEvent", OnEvent)
+
 function AstronaX:ADDON_LOADED()
     if UnitLevel(player) ~= maxlevel then
-      time_on_login = GetTime();
+      time_on_login = GetTime()
     end
 
     if(not AstronaXDB) then
@@ -1023,20 +1016,19 @@ function AstronaX:ADDON_LOADED()
       print(addon_highlight..l["This is the first use of AstronaX on this character. Database has been initialized."])
       print(addon_color..l["Please use %s or %s to display the help, you can enable or disable features as you like."]:format(addon_highlight..SLASH_AstronaX1..addon_color, addon_highlight..SLASH_AstronaX2..addon_color))
       print(addon_color..l["You can also use our GUI to change settings, just go to ESC -> Interface -> Addons -> AstronaX."])
-      
+
       AstronaXDB[player]["abmv"] = 1000 --"gold auto balance money amount
       AstronaXDB[player]["abm"] = 0 --"gold auto balance money
       AstronaXDB[player]["aslm"] = 0 --auto loot method
       AstronaXDB[player]["arol"] = 0 --auto roll on loot
       AstronaXDB[player]["staui"] = 0 --auto sell junk and unwanted items
       AstronaXDB[player]["farclip_toggle"] = 0 --auto loot method
-	  AstronaXDB[player]["fssb"] = 1;
-    
+
       AstronaXDB.auto_inv_whisper_text = "ainv";
       AstronaXDB.addon_color = green;
       AstronaXDB.addon_highlight = yellow;
     end
-    
+
     for k in pairs(function_array) do
       if not(AstronaXDB[player][function_array[k]]) then
         AstronaXDB[player][function_array[k]] = 1
@@ -1052,7 +1044,7 @@ function AstronaX:ADDON_LOADED()
 	  end
     end
     addon_color = AstronaXDB.addon_color
-    addon_highlight = AstronaXDB.addon_highlight  
+    addon_highlight = AstronaXDB.addon_highlight
 end
 
 function AstronaX:ACTIVE_TALENT_GROUP_CHANGED()
@@ -1065,70 +1057,6 @@ function AstronaX:START_LOOT_ROLL(rollID)
   end
 end
 
-function AstronaX:CollectProfessions()
-	local i = 1
-	while i < 20 do
-		local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL)
-		if not spellName then
-			do break end
-		end
-
-		local spellID = GetSpellLink(spellName):match("spell:%d+"):gsub("spell:", "")
-		spellID = tonumber(spellID)
-		if 
-			spellID == 51306 or	-- Ingenieurskunst
-			spellID == 45363 or	-- Inschriftenkunde
-			spellID == 51309 or	-- Schneiderei
-			spellID == 51313 or	-- Verzauberkunst
-			spellID == 51304 or	-- Alchemie
-			spellID == 51311 or	-- Juwelenschleifen
-			spellID == 51302 or	-- Lederverarbeitung
-			-- spellID == 50310 or	-- Bergbau
-			spellID == 51300 or	-- Schmiedekunst
-			spellID == 50305 or	-- Kürschnerei
-			spellID == 2580 or	-- Mineraliensuche
-			spellID == 2383	-- Kräutersuche
-		then
-			self:Update_Professions(spellName, "|T"..GetSpellTexture(i,BOOKTYPE_SPELL)..":16|t")
-		end
-
-		i = i + 1
-	end
-end
-
-function AstronaX:TRADE_SKILL_SHOW()
-	self:CollectProfessions()
-end
-
-function AstronaX:Update_Professions(tradeSkillName, tradeSkillTexture)
-	if tradeSkillName ~= nil then
-		if AstronaXDB[player]["professions_1_name"] == nil or AstronaXDB[player]["professions_1_name"] == tradeSkillName then
-			AstronaXDB[player]["professions_1_name"] = tradeSkillName
-			AstronaXDB[player]["professions_1_texture"] = tradeSkillTexture
-			-- AstronaXDB[player]["professions_1_currentLevel"] = currentLevel
-			-- AstronaXDB[player]["professions_1_maxLevel"] = maxLevel
-		else
-			if AstronaXDB[player]["professions_2_name"] == nil or AstronaXDB[player]["professions_2_name"] == tradeSkillName then
-				AstronaXDB[player]["professions_2_name"] = tradeSkillName
-				AstronaXDB[player]["professions_2_texture"] = tradeSkillTexture
-				-- AstronaXDB[player]["professions_2_currentLevel"] = currentLevel
-				-- AstronaXDB[player]["professions_2_maxLevel"] = maxLevel
-			else
-			-- profession has changed, update first, and clear sec, on next profession open this is fixed
-				AstronaXDB[player]["professions_1_name"] = tradeSkillName
-				AstronaXDB[player]["professions_1_texture"] = tradeSkillTexture
-				-- AstronaXDB[player]["professions_1_currentLevel"] = currentLevel
-				-- AstronaXDB[player]["professions_1_maxLevel"] = maxLevel
-				
-				AstronaXDB[player]["professions_2_name"] = nil
-				AstronaXDB[player]["professions_2_texture"] = nil
-				-- AstronaXDB[player]["professions_2_currentLevel"] = nil
-				-- AstronaXDB[player]["professions_2_maxLevel"] = nil
-			end
-		end
-	end
-end
-
 function AstronaX:CHAT_MSG_CHANNEL(msg, author, _, _, _, _, _, _, channel_name, _, _)
   if author ~= nil and author ~= "" and  msg ~= nil and msg ~= "" then
     self:GetLastChannelPostingAuthors(author, channel_name)
@@ -1136,48 +1064,11 @@ function AstronaX:CHAT_MSG_CHANNEL(msg, author, _, _, _, _, _, _, channel_name, 
   if AstronaXDB[player]["twcrs"] == 1 then
     self:InformOnRaidSearchRequests(msg, author, channel_name)
   end
-  
-  self:OnTextUpdate();
-end
-
-function AstronaX:CHAT_MSG_EMOTE(msg, player, msgID, senderGUID)
-  -- if AstronaXDB[player]["fssb"] ~= nil and AstronaXDB[player]["fssb"] == 1 then
-	self:PlaySankySounds(msg);
-  -- end
-end
-
-function AstronaX:CHAT_MSG_SAY(msg, player, language, msgID, senderGUID)
-  -- if AstronaXDB[player]["fssb"] ~= nil and AstronaXDB[player]["fssb"] == 1 then
-	self:PlaySankySounds(msg);
-  -- end
-end
-
-function AstronaX:CHAT_MSG_GUILD(msg, player, language, msgID, senderGUID)
-  -- if AstronaXDB[player]["fssb"] ~= nil and AstronaXDB[player]["fssb"] == 1 then
-	self:PlaySankySounds(msg);
-  -- end
-end
-
-function AstronaX:CHAT_MSG_PARTY(msg, player, language, msgID, senderGUID)
-  -- if AstronaXDB[player]["fssb"] ~= nil and AstronaXDB[player]["fssb"] == 1 then
-	self:PlaySankySounds(msg);
-  -- end
-end
-
-function AstronaX:CHAT_MSG_RAID(msg, player, language, msgID, senderGUID)
-  -- if AstronaXDB[player]["fssb"] == 1 then
-	self:PlaySankySounds(msg);
-  -- end
 end
 
 function AstronaX:CHAT_MSG_WHISPER(msg, unit)
-  last_msg_send = msg;
   if AstronaXDB[player]["aifk"] == 1 then
     self:AcceptInvWhisper(msg, unit)
-  end
-  
-  if AstronaXDB[player]["fssb"] == 1 then
-	self:PlaySankySounds(msg);
   end
 end
 
@@ -1185,11 +1076,6 @@ function AstronaX:CHAT_MSG_WHISPER_INFORM(msg, target)
   if AstronaXDB[player]["aifa"] == 1 then
     self:AcceptChatInvites(msg, target)
   end
-  
-  if AstronaXDB[player]["fssb"] == 1 then
-	self:PlaySankySounds(msg);
-  end
-  
   gone_afk_at = 0
 end
 
@@ -1198,7 +1084,7 @@ function AstronaX:COMBAT_TEXT_UPDATE(message_type, faction_name, _)
     for factionIndex = 1, GetNumFactions() do
       name, description, standingId, bottomValue, topValue, earnedValue, atWarWith,
         canToggleAtWar, isHeader, isCollapsed, hasRep, isWatched, isChild = GetFactionInfo(factionIndex)
-      if 
+      if
         isHeader == nil and
         name == faction_name
       then
@@ -1220,20 +1106,20 @@ function AstronaX:COMBAT_LOG_EVENT_UNFILTERED(_, event, _, sourceName, _, _, des
       end
       --SendChatMessage(l["%s used %s to interupt %s by %s"]:format(sourceName, GetSpellLink(spellID), GetSpellLink(SuffixParam1), destName), channel_target)
       print(GetClassColor(GetClassName(sourceName))..l["%s used %s to interupt %s by %s"]:format(sourceName..yellow, "|T"..select(3, GetSpellInfo(spellID))..":12|t"..GetSpellLink(spellID), "|T"..select(3, GetSpellInfo(SuffixParam1))..":12|t"..GetSpellLink(SuffixParam1), destName))
-    else 
+    else
       print(GetClassColor(GetClassName(sourceName))..l["%s used %s to interupt %s by %s"]:format(sourceName..yellow, "|T"..select(3, GetSpellInfo(spellID))..":12|t"..GetSpellLink(spellID), "|T"..select(3, GetSpellInfo(SuffixParam1))..":12|t"..GetSpellLink(SuffixParam1), destName))
     end
 	end
 end
 
 function AstronaX:CONFIRM_LOOT_ROLL(rollID, rollType)
-  if AstronaXDB[player]["clgr"] == 1 then 
+  if AstronaXDB[player]["clgr"] == 1 then
     self:AcceptRollConfirmation(rollID, rollType)
   end
 end
 
 function AstronaX:CONFIRM_DISENCHANT_ROLL(rollID, rollType)
-  if AstronaXDB[player]["cldr"] == 1 then 
+  if AstronaXDB[player]["cldr"] == 1 then
     self:AcceptRollConfirmation(rollID, rollType)
   end
 end
@@ -1329,10 +1215,6 @@ function AstronaX:PLAYER_FLAGS_CHANGED(unit)
   end
 end
 
-function AstronaX:PLAYER_LOGIN()
-	self:CollectProfessions()
-end
-
 function AstronaX:PLAYER_LOGOUT()
   Recount:ResetData()
 	self:UpdateTalents()
@@ -1360,14 +1242,10 @@ function AstronaX:PLAYER_REGEN_ENABLED()
   if AstronaXDB[player]["tgham"] == 1 then
     self:GetGroupStats()
   end
-  
-	self:GetRaidBlocks()
-	self:GetDailyStatus()
-	self:UpdateWeekly()
 end
 
 function AstronaX:PLAYER_REGEN_DISABLED()
-  -- self:FixBrokenCombatLog()
+  self:FixBrokenCombatLog()
 end
 
 function AstronaX:PLAYER_TARGET_CHANGED()
@@ -1399,25 +1277,21 @@ function AstronaX:QUEST_TURNED_IN()
 	self:GetDailyStatus()
 end
 
-function AstronaX:QUEST_COMPLETE()
-	self:AutoTurnInQuest()
-end
-
-function AstronaX:QUEST_PROGRESS()
-	self:AutoCompleteQuest()
-end
-
 function AstronaX:QUEST_QUERY_COMPLETE()
 	self:UpdateWeekly()
 	self:GetDailyStatus()
 end
 
 function AstronaX:RAID_ROSTER_UPDATE()
-  SetCVar("showLootSpam", 0)
-  if AstronaXDB[player]["sals"] == 1 then
-	if GetNumRaidMembers() <= 10 or GetNumRaidMembers() == 0 then  
-		SetCVar("showLootSpam", 1)
-	end
+  if GetNumRaidMembers() <= 10 then
+    -- SetCVar("showLootSpam", 1)
+    if AstronaXDB[player]["sals"] == 1 then
+      SetCVar("showLootSpam", 0)
+    end
+  else
+    if AstronaXDB[player]["sals"] == 1  then
+      SetCVar("showLootSpam", 0)
+    end
   end
   --isRaid()
 end
@@ -1487,7 +1361,7 @@ function AstronaX:ZONE_CHANGED_NEW_AREA()
   self:UpdateTalents()
 	self:OnTextUpdate()
 end
-
+------------------------------------------------------------------------------------------------------------------------------
 function AstronaX:AcceptChatInvites(msg, target)
   if (string.match(msg, '%d.%dk') or string.match(msg, '%d%d%d%dgs') or msg == "+" or msg == "inv") and target ~= player then  -- matched 5.5k z.b.
     pending_inviter = target
@@ -1498,7 +1372,7 @@ function AstronaX:AcceptChatInvites(msg, target)
 end
 
 function AstronaX:AcceptFriendInvites(unit)
-  local numberOfFriends = GetNumFriends();   
+  local numberOfFriends = GetNumFriends();
   for i = 1, numberOfFriends do
     local fname = GetFriendInfo(i);
     if( fname == unit ) then
@@ -1534,7 +1408,7 @@ end
 function AstronaX:AutoRepair()
   local method = nil
   local cost = 0
-  
+
   if CanMerchantRepair() == 1 then
     local RepairCost, canRepair = GetRepairAllCost()
     if tonumber(AstronaX:GetArmorStatus()) < 80 then
@@ -1543,9 +1417,9 @@ function AstronaX:AutoRepair()
       -- gbammount currently selected Guild Rank can withdraw per day in GOLD instead of cupper
       local gbAmount = GetGuildBankWithdrawMoney()
       gbAmmount = gbAmount * 10000
-      -- gbmoney amount of money in the guild bank in copper. 
+      -- gbmoney amount of money in the guild bank in copper.
       local gbMoney = GetGuildBankMoney()
-      
+
       cost = RepairCost
       if IsInGuild() and ( RepairCost <= gbMoney and RepairCost <= gbAmount) then
       --if IsInGuild() and ((gbAmount == -1 and gbMoney > RepairCost) or gbAmount > RepairCost) then
@@ -1556,8 +1430,8 @@ function AstronaX:AutoRepair()
         print(addon_color..l["You neither have enough gold in your poket nor offers your guildbank enough to pay your repair costs."])
       end
     end
-    
-    if method == 2 or method == 1 then 
+
+    if method == 2 or method == 1 then
       local payedByWho = {l["personally"], l["by guildbank"]}
       local payByGuild = nil
       if method == 2 then
@@ -1576,7 +1450,7 @@ function AstronaX:AcceptRevival(inviter)
       inviting_unit = inviter
   end
   PlaySoundFileAstronax("Sound\\Spells\\YarrrrImpact.wav");
-  
+
   if isInGroup() and inviting_unit ~= nil then
     if pending_rezz == 1 and AstronaXDB[player]["iobr"] then
       SendChatMessage(l["%s's battle Rezz accepted"]:format(inviting_unit),GetGroupType());
@@ -1598,11 +1472,11 @@ end
 function AstronaX:AcceptRollConfirmation(rollID, rollType)
   if ( rollType > 1 ) then
     ConfirmLootRoll( rollID, rollType );
-    --RollID :    Number - As passed by the event. (The number increases with every roll you have in a party) 
+    --RollID :    Number - As passed by the event. (The number increases with every roll you have in a party)
     --roll :    Number - Type of roll: (also passed by the event)
-    --	      1 : Need roll 
-    --        2 : Greed roll 
-    --        3 : Disenchant roll 
+    --	      1 : Need roll
+    --        2 : Greed roll
+    --        3 : Disenchant roll
     StaticPopup1Button2:Click();
   end
 end
@@ -1611,55 +1485,39 @@ function AstronaX:AutoRollOnLoot(rollID)
   local _, name, _, quality, bindOnPickUp, canNeed, _, canDisenchant = GetLootRollItemInfo(rollID);
   local rollType = 4 -- default nothing
   local rollTypeStrings = {l["needed"],l["greeded"],l["dizzed"],l["will manually select"]}
-  
-	if UnitLevel(player) == maxLevel and UnitIsDeadOrGhost(player) == nil and AstronaXDB[player]["ilvl_minimum"] > 200 then
-		-- grüne items wenn möglich immer dissen
-		if quality == 2 then -- 2 = grün
-			if canDisenchant then
-				rollType = 3  -- 3 = dizz
-			else
-				rollType = 2  -- 2 = gier
-			end
-		end
 
-		-- blaue items im raid needen, sonst dissen oder alternative gieren
-		if quality == 3 then -- 2 = blau
-			if canNeed and isRaid() then
-				-- if name == 'Urtümliches Saronit' then
-				-- else
-					-- rollType = 1  -- 1 = need
-				-- end
-			else
-				if canDisenchant then
-					rollType = 3  -- 3 = dizz
-				else
-					rollType = 2  -- 2 = gier
-				end
-			end
-		end
+  if UnitLevel(player) == maxLevel and UnitIsDeadOrGhost(player) == nil and AstronaXDB[player]["ilvl_minimum"] > 200  then
+    -- grüne items wenn möglich immer dissen
+    if quality == 2 then -- 2 = grün
+      if canDisenchant then
+        rollType = 3  -- 3 = dizz
+      else
+        rollType = 2  -- 2 = gier
+      end
+    end
 
-		-- nicht gebundene epics needen
-		if quality == 4 then -- 4 = episch
-			if bindOnPickUp ~= 1 and canNeed then
-				rollType = 1  -- 1 = need
-			end
-		end
-	end
+    -- blaue items im raid needen, sonst dissen oder alternative gieren
+    if quality == 3 then -- 2 = blau
+      --if canNeed and isRaid() then
+--        rollType = 3  -- 1 = need/ geändert in disenchant
+      --else
+        if canDisenchant then
+          rollType = 3  -- 3 = dizz
+        else
+          rollType = 2  -- 2 = gier
+        end
+      --end
+    end
 
-	-- ausnahmen
-	for dontRollOnCounter = 1, #dontRollOn do
-		if name == dontRollOn[dontRollOnCounter] then
-			print("hit on special item "..name);
-			
-			if canNeed then
-				rollType = 1  -- 1 = need
-			else
-				rollType = 2  -- 2 = gier
-			end
-		end
-	end
+    -- nicht gebundene epics needen
+    if quality == 4 then -- 4 = episch
+      if bindOnPickUp ~= 1 and canNeed then
+        rollType = 1  -- 1 = need
+      end
+    end
+  end
 
-  if rollType < 4 and GetGroupCount() <= 10 then
+  if rollType < 4 then
     RollOnLoot(rollID,rollType);
   end
   local quality_color = select(4, GetItemQualityColor(quality))
@@ -1670,7 +1528,7 @@ end
 function AstronaX:AutoSellJunk()
 	local soldItems = 0;
 	local sellPrice = 0;
-  
+
   --print(addon_color..l["Selling Junk and unwanted items"])
 	for bag=0,4 do
 		for slot=0,GetContainerNumSlots(bag) do
@@ -1679,24 +1537,24 @@ function AstronaX:AutoSellJunk()
 			local itemLock = select(3, GetContainerItemInfo(bag,slot))
 			local itemQuality = select(4, GetContainerItemInfo(bag,slot))
 			local itemId = GetContainerItemID(bag, slot);
-            
-			if itemId ~= nil and 
-				itemQuality < 4 and 
-				itemLock == nil and 
-				itemCount < 10  and 
+
+			if itemId ~= nil and
+				itemQuality < 4 and
+				itemLock == nil and
+				itemCount < 10  and
 				isValueInsideArray(sellJunkList, itemId) or
 				itemLink and select(3, GetItemInfo(itemLink)) == 0
 			then
 				print(addon_color..itemCount.."x "..itemLink) --..orange" Debug (ID:"..itemId.." Quality:"..itemQuality..")")
 				sellPrice = sellPrice + (select(11, GetItemInfo(itemLink)) * GetItemCount(itemLink));
 				soldItems = soldItems +1;
-				
+
 				ShowMerchantSellCursor(1)
 				UseContainerItem(bag, slot)
 			end
 		end
 	end
-  
+
   if soldItems > 0 then
     PlaySoundFileAstronax("Sound\\Interface\\LootCoinSmall.wav");
     if sellPrice > 0 then
@@ -1727,7 +1585,7 @@ function AstronaX:AutoTradeEmblems()
       local emblemcountModulo = math.fmod(GetItemCount(selectionIds[x]),10)
       local tradeammount = GetItemCount(selectionIds[x]) - emblemcountModulo
       local loop = tradeammount / 10
-      
+
       self:TradeEmblems(loop, x, 2)
       self:TradeEmblems(loop, x, 3)
       self:TradeEmblems(loop, x, 1)
@@ -1754,26 +1612,13 @@ function AstronaX:CheckInviteRequest(unit, inviting)
     end
     local minutes = floor(mod(time_in_afk,3600)/60)
 
-
-	if last_msg_send ~= l["AutoInvite declined, sorry been afk for %s min(s)."]:format(minutes) then
-		last_msg_send = l["AutoInvite declined, sorry been afk for %s min(s)."]:format(minutes);
-		SendChatMessage(l["AutoInvite declined, sorry been afk for %s min(s)."]:format(minutes),"WHISPER" ,COMMON ,unit);
-	end
-	
+    SendChatMessage(l["AutoInvite declined, sorry been afk for %s min(s)."]:format(minutes),"WHISPER" ,COMMON ,unit);
     return
   elseif GetLFGQueueStats() then
-	if last_msg_send ~= l["AutoInvite declined, already in DB queue."] then
-		last_msg_send = l["AutoInvite declined, already in DB queue."];
-		SendChatMessage(l["AutoInvite declined, already in DB queue."],"WHISPER" ,COMMON ,unit);
-	end
-	
+    SendChatMessage(l["AutoInvite declined, already in DB queue."],"WHISPER" ,COMMON ,unit);
     return
   elseif (isInGroup() and not IsLeadOrAssist() ) then --checked ob ziel vorhanden ist und man inviten darf
-	if last_msg_send ~= l["AutoInvite declined, i am no group leader and do not have invite permissions."] then
-		last_msg_send = l["AutoInvite declined, i am no group leader and do not have invite permissions."];
-		SendChatMessage(l["AutoInvite declined, i am no group leader and do not have invite permissions."],"WHISPER" ,COMMON ,unit);
-	end
-	
+    SendChatMessage(l["AutoInvite declined, i am no group leader and do not have invite permissions."],"WHISPER" ,COMMON ,unit);
     return
   elseif pending_inviter and pending_inviter == unit then
     print(addon_color..l["AutoInvite accepted."])
@@ -1782,7 +1627,7 @@ function AstronaX:CheckInviteRequest(unit, inviting)
       InviteUnit(pending_inviter);
       pending_inviter = nil
     else
-      -- wir wurden eingeladen, weil vorheriger whisper?    
+      -- wir wurden eingeladen, weil vorheriger whisper?
       AcceptGroup();
       StaticPopup_Hide("PARTY_INVITE");
     end
@@ -1823,13 +1668,13 @@ function AstronaX:FixBrokenCombatLog()
     if ( last_event_occurance + 15)  < GetTime() then
       CombatLogClearEntries()
       last_event_occurance = GetTime()
-      print(red..l["Combat Log was broken"])
+      print(red.."Combat Log was broken, we have resetted the cache.")
     end
   end
 end
 
 function AstronaX:GetArmorStatus()
-	local total_damage = 0	
+	local total_damage = 0
 	for i = 1, 18 do
 		local current, maximum = GetInventoryItemDurability(i);
 		if current ~= nil and maximum ~= nil and current ~= 100 then
@@ -1837,9 +1682,9 @@ function AstronaX:GetArmorStatus()
 			if tmp > 0 then
 				total_damage = total_damage + tmp
 			end
-		end		
+		end
 	end
-	
+
   local total_percentage = 100
 	if total_damage > 0 then
 		total_percentage = 100 - total_damage / 18 * 2 --nur jedes 2 item hat eine haltbarkeit
@@ -1880,13 +1725,13 @@ function AstronaX:GetGroupStats()
   local total_class_count = 0;
   local grp_type = "party";
 
-  if isInGroup() and GetGroupCount() > 1  then		
+  if isInGroup() and GetGroupCount() > 1  then
     if GetGroupCount() > 4 then
       grp_type = "raid";
     end
     for i=1,GetGroupCount() do
-      if UnitManaMax(grp_type..i) ~= 100 and UnitManaMax(grp_type..i) > 100 then 
-        if 
+      if UnitManaMax(grp_type..i) ~= 100 and UnitManaMax(grp_type..i) > 100 then
+        if
           GetClassName(grp_type..i) == "DRUID" or
           GetClassName(grp_type..i) == "MAGE" or
           GetClassName(grp_type..i) == "PALADIN" or
@@ -1901,9 +1746,9 @@ function AstronaX:GetGroupStats()
         total_class_count = total_class_count + 1;
       end
     end
-    
+
     -- addiere player selbst hinzu da nicht teil der gruppe
-    if UnitManaMax("player") > 100 then 
+    if UnitManaMax("player") > 100 then
       total_mana_percentage = total_mana_percentage + (UnitMana("player") / UnitManaMax("player"));
       mana_class_count = mana_class_count + 1;
     end
@@ -1911,10 +1756,10 @@ function AstronaX:GetGroupStats()
       total_health_percentage = total_health_percentage + (UnitHealth("player") / UnitHealthMax("player"));
       total_class_count = total_class_count + 1;
     end
-    
+
     if mana_class_count > 0 then
       total_mana_percentage = round(total_mana_percentage / mana_class_count);
-    else 
+    else
       total_mana_percentage = 100;
     end
     if total_class_count > 0 then
@@ -1922,15 +1767,15 @@ function AstronaX:GetGroupStats()
     else
       total_health_percentage = 0;
     end
-    
+
     local Mcolor = red;
     if total_mana_percentage > 70 then Mcolor = addon_color
     elseif total_mana_percentage > 35 then Mcolor = orange; end
-    
+
     local Hcolor = red;
     if total_health_percentage > 70 then Hcolor = addon_color
     elseif total_health_percentage > 35 then Hcolor = orange; end
-    
+
     if (total_health_percentage or total_health_percentage) ~= 100 then
       UIErrorsFrame:AddMessage(l["Group Mana"]..": "..total_mana_percentage.."%", 0.25, 0.88, 0.82, 53, 4);
       UIErrorsFrame:AddMessage(l["Group Health"]..": "..total_health_percentage.."%", 0.1, 1.0, 0.1, 53, 4);
@@ -1962,14 +1807,14 @@ function AstronaX:GetItemLevel(target)
       end
     end
   end
-  local average = math.floor( TotelItemLevel / TotalItemCount )  
+  local average = math.floor( TotelItemLevel / TotalItemCount )
   return average, MinItemLevel
 end
 
 function AstronaX:GetLastChannelPostingAuthors(author, channel_name)
   if channel_name == "World" or channel_name == "world" then
     world_player_list[author] = time()
-    
+
     local smallest_value = ""
     local smallest_key = ""
     for k,v in loop_table_sorted(world_player_list) do -- sorts by v = Value
@@ -1978,7 +1823,7 @@ function AstronaX:GetLastChannelPostingAuthors(author, channel_name)
         smallest_key = k
       end
     end
-    
+
     if GetArraySize(world_player_list) > 10 then
       world_player_list[smallest_key] = nil
     end
@@ -1990,30 +1835,30 @@ function AstronaX:GetMail()
 		mailCount = GetInboxNumItems()
 		if mailCount > 0 then
 			local _, _, sender, subject, money, CODAmount, _, hasItem, _, _, _, _, isGM = GetInboxHeaderInfo(mailCount);
-			
+
 			if (hasItem or money > 0) and CODAmount == 0  and isGM ~= 1 then
 
 				if money > 0 then
 					local _, isInvoice = GetInboxText(mailCount);
           if isInvoice then
             local _, itemName, playerName, _, _, _, _ = GetInboxInvoiceInfo(mailCount);
-            
+
             if playerName ~= nil then
               print(addon_highlight.." "..mailCount..addon_color..". "..l["Mail contains %s from %s for %s."]:format(format_money(money, true, true, true)..addon_color,addon_highlight..playerName..addon_color, white..itemName));
             end
-            
+
 					else
             print(addon_highlight.." "..mailCount..addon_color..". "..l["Mail by %s regarding %s contains %s."]:format(addon_highlight..sender..addon_color, white..subject, format_money(money, true, true, true)..addon_color));
 					end
 					TakeInboxMoney(mailCount);
 					PlaySoundFileAstronax("Sound\\Interface\\LootCoinSmall.wav");
 				end
-				
+
 				if hasItem and sender then
           local sender = select(3, GetInboxHeaderInfo(mailCount))
 					self:GetAttachment( mailCount, sender )
 					PlaySoundFileAstronax("Sound\\Interface\\Pickup\\PutDownBag.wav");
-				end	
+				end
 			end
 			--CloseMail()
 		end
@@ -2030,7 +1875,7 @@ function AstronaX:GetPlayerXPStatus(unit)
     local xp_max = UnitXPMax(unit);
     local xp_count = UnitXP(unit) - xp_current_status
     xp_gain = xp_gain + xp_count
-    
+
     if xp_max > 0 and xp_count > 0 then
       local xp_percent = round(xp_count/xp_max)
       local text = addon_color..l["ExperienceStatus: "]
@@ -2053,7 +1898,7 @@ function AstronaX:GetRaidstatusColor(raidname, player_ilvl, ilvl, size)
   if raidname == nil then
     raidname = 0
   end
-  
+
   if raidname > time() then
     returnString = color_redgrayed..size..yellow
   elseif player_ilvl >= ilvl then
@@ -2083,11 +1928,11 @@ end
 
 function AstronaX:GetReplenishmentReminder(spell, PowerTarget)
   if last_sound_played[spell] == nil then last_sound_played[spell] = GetTime() end
-    
+
 	if isInCombat() and isInGroup() then
 		local PowerProzent = UnitPower("player") / UnitPowerMax("player");
     if ( PowerTarget > 1 ) then PowerTarget = (UnitPowerMax("player") - PowerTarget) / UnitPowerMax("player") end
-    
+
     if (
       GetSpellLink(spell) ~= nil and
       PowerProzent <= PowerTarget and
@@ -2096,15 +1941,12 @@ function AstronaX:GetReplenishmentReminder(spell, PowerTarget)
     ) then
       sound_played_counter = sound_played_counter + 1
       last_sound_played[spell] = GetTime();
-	  
-      if( self:CheckIfSpellIsPresent(spell,"player") == false ) then
-		PlaySoundFileAstronax("Sound\\Interface\\UI_BnetToast.wav");
-	  
-		UIErrorsFrame:AddMessage(">>> "..l["Use %s now"]:format(GetSpellLink(spell)).." <<<", 1.0, 0.1, 1.0, 53, 3);
-		print(">>> "..l["Use %s now"]:format(GetSpellLink(spell)).." <<<",100,0,100);
-	  end
+
+      PlaySoundFileAstronax("Sound\\Interface\\UI_BnetToast.wav");
+      UIErrorsFrame:AddMessage(">>> "..l["Use %s now"]:format(GetSpellLink(spell)).." <<<", 1.0, 0.1, 1.0, 53, 3);
+      print(">>> "..l["Use %s now"]:format(GetSpellLink(spell)).." <<<",100,0,100);
     end
-	end   
+	end
 end
 
 function AstronaX:CheckIfSpellIsPresent(spell,target)
@@ -2115,12 +1957,11 @@ function AstronaX:CheckIfSpellIsPresent(spell,target)
         if string.match(UnitBuff(target,i), spell) then
           spell_found = true
           last_sound_played[spell] = GetTime()
-          -- return
+          return
         end
       end
     end
   end
-
   return spell_found
 end
 
@@ -2144,53 +1985,54 @@ function AstronaX:AlertOnMissingBuff(spell,soundpath)
     if soundpath then
       PlaySoundFileAstronax(soundpath);
     end
-    
-    print(red..">>> "..purple..spell..red.." "..l["not"].." "..l["activ"].." <<<");
+
+    print(red..">>> "..purple..spell..red.." not activ <<<");
     UIErrorsFrame:AddMessage(">>> "..spell.." "..l["not"].." "..l["activ"].." <<<", 1.0, 0.0, 1.0, 53, 5);
   end
 end
 
+
 function AstronaX:GetUnitAuraUpdates()
 	if isInCombat() and isInGroup() and GetClassName() == "PRIEST" then
-    if self:CheckIfSpellIsPresent(l["spell_Schattengestalt"], "player") ~= false then
-      self:GetSpellUponTarget(l["spell_Vampirumarmung"],"player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
+    if self:CheckIfSpellIsPresent("Schattengestalt", "player") ~= false then
+      self:GetSpellUponTarget("Vampirumarmung","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
     end
-    self:GetSpellUponTarget(l["spell_Inneres Feuer"],"player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
-  
+    self:GetSpellUponTarget("Inneres Feuer","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
+
   elseif isInCombat() and isInGroup() and GetClassName() == "MAGE" then
-    self:GetSpellUponTarget(l["spell_Rüstung"],"player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
-    self:GetSpellUponTarget(l["spell_Magie fokussieren"],"focus","Sound\\Interface\\LFG_Rewards.wav")
-    
+    self:GetSpellUponTarget("Rüstung","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
+    self:GetSpellUponTarget("Magie fokussieren","focus","Sound\\Interface\\LFG_Rewards.wav")
+
   elseif isInCombat() and isInGroup() and GetClassName() == "DEATHKNIGHT" then
-    self:GetSpellUponTarget(l["spell_Horn des Winters"],"player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
-    
+    self:GetSpellUponTarget("Horn des Winters","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
+
   elseif isInCombat() and isInGroup() and GetClassName() == "HUNTER" then
-    self:GetSpellUponTarget(l["spell_Aspekt"],"player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
-    
+    self:GetSpellUponTarget("Aspekt","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
+
   elseif isInCombat() and isInGroup() and GetClassName() == "ROGUE" then
     if select(1,GetWeaponEnchantInfo()) == nil or select(4,GetWeaponEnchantInfo()) == nil then
-      -- self:AlertOnMissingBuff("Poison(s)","Sound\\Interface\\Sound\\Interface\\ReadyCheck.wav")
+      self:AlertOnMissingBuff("Poison(s)","Sound\\Interface\\Sound\\Interface\\ReadyCheck.wav")
     end
-    
+
   elseif isInCombat() and isInGroup() and GetClassName() == "SHAMAN" then
     if select(1,GetWeaponEnchantInfo()) == nil then
-      self:AlertOnMissingBuff(l["WeaponBuff MainHand"],"Sound\\Interface\\Sound\\Interface\\ReadyCheck.wav")
+      self:AlertOnMissingBuff("WeaponBuff MainHand","Sound\\Interface\\Sound\\Interface\\ReadyCheck.wav")
     end
     if OffhandHasWeapon() == true and select(4,GetWeaponEnchantInfo()) == nil then
-      self:AlertOnMissingBuff(l["WeaponBuff Offhand"],"Sound\\Interface\\Sound\\Interface\\ReadyCheck.wav")
+      self:AlertOnMissingBuff("WeaponBuff Offhand","Sound\\Interface\\Sound\\Interface\\ReadyCheck.wav")
     end
     self:GetSpellUponTarget("schild","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
-    self:GetSpellUponTarget(l["Erdschild"],"focus","Sound\\Interface\\LFG_Rewards.wav")
-    
+    self:GetSpellUponTarget("Erdschild","focus","Sound\\Interface\\LFG_Rewards.wav")
+
   elseif isInCombat() and isInGroup() and GetClassName() == "WARLOCK" then
-    self:GetSpellUponTarget(l["rüstung"],"player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
+    self:GetSpellUponTarget("rüstung","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
     if select(1,GetWeaponEnchantInfo()) == nil then
-      self:AlertOnMissingBuff(l["WeaponBuff"],"Sound\\Interface\\Sound\\Interface\\ReadyCheck.wav")
+      self:AlertOnMissingBuff("WeaponBuff","Sound\\Interface\\Sound\\Interface\\ReadyCheck.wav")
     end
-    
+
   elseif isInCombat() and isInGroup() and GetClassName() == "WARRIOR" then
-    if self:CheckIfSpellIsPresent(l["spell_Segen der Macht"], "player") == false then
-      self:GetSpellUponTarget(l["spell_ruf"],"player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
+    if self:CheckIfSpellIsPresent("Segen der Macht", "player") == false then
+      self:GetSpellUponTarget("ruf","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
     end
   end
 end
@@ -2205,21 +2047,19 @@ function AstronaX:GetWeeklyStatus(db_player)	-- returns true if weekly hc has be
 end
 
 function AstronaX:AnnounceRaidSearch(author,color,raid, minIlvl)
-  if GetGroupType() == "player" then
-	PlaySoundFileAstronax("Sound\\Interface\\MagicClick.wav")
-  end
-  print(addon_color.."RaidWatch: "..addon_highlight..author..green.." "..l["is looking for"].." "..color..raid..green)
+  PlaySoundFileAstronax("Sound\\Interface\\MagicClick.wav")
+  print(addon_color.."RaidWatch: "..addon_highlight..author..green.." is looking for "..color..raid..green)
 end
 
 function AstronaX:CheckRaidIDandRelevance(author, msgFound, ilvl_minimum, msgColor, raidPattern, raidName, msgInform)
-  if string.match(msgFound, raidPattern) then  
-    if 
-      AstronaXDB[player]["ilvl_minimum"] < ilvl_minimum 
-      and 
+  if string.match(msgFound, raidPattern) then
+    if
+      AstronaXDB[player]["ilvl_minimum"] < ilvl_minimum
+      and
       (
         AstronaXDB[player][raidName] == nil
         or
-        AstronaXDB[player][raidName] < time() 
+        AstronaXDB[player][raidName] < time()
       )
     then
       local difficultyMode = ""
@@ -2241,8 +2081,8 @@ function AstronaX:InformOnRaidSearchRequests(msg, author, channel_name)
     and not(string.match(msg, '[Aa]nschlu[ßSs]+'))
     and not(string.match(msg, '[Oo]ffen'))
     and string.len(msg) > 20 -- nimmt an dass mindestens so viel text gesucht wird (lfm icc 1 tank /w me)
-    and UnitLevel("player") == maxLevel 
-    and AstronaXDB[player]["ilvl_minimum"] ~= nil 
+    and UnitLevel("player") == maxLevel
+    and AstronaXDB[player]["ilvl_minimum"] ~= nil
     and author ~= player
   then
     self:CheckRaidIDandRelevance(author, msg, 300, orange, '[Ww]eekly', "weeklyraidquest", "Weekly")
@@ -2254,10 +2094,8 @@ function AstronaX:InformOnRaidSearchRequests(msg, author, channel_name)
     self:CheckRaidIDandRelevance(author, msg, 226, "|cff33cccc", '[Uu]lduar%s*2[0-9]', "Ulduar;25;2", "Ulduar")
     self:CheckRaidIDandRelevance(author, msg, 232, "|cffff6600", '[Oo][Nn][IiYy]%s*1[0-9]', "Onyxias Hort;10;1", "Ony")
     self:CheckRaidIDandRelevance(author, msg, 245, "|cffff6600", '[Oo][Nn][IiYy]%s*2[0-9]', "Onyxias Hort;25;2", "Ony")
-    self:CheckRaidIDandRelevance(author, msg, 271, "|cffff5050", '[Rr][Uu][Bb][IiYy]%s*[6-9]', "Das Rubinsanktum;10;1", "Rubi")
-    self:CheckRaidIDandRelevance(author, msg, 271, "|cffff5050", '[Rr][Uu][Bb][IiYy]%s*10', "Das Rubinsanktum;10;1", "Rubi")
-    self:CheckRaidIDandRelevance(author, msg, 284, "|cffff5050", '[Rr][Uu][Bb][IiYy]%s*1[1-9]', "Das Rubinsanktum;25;2", "Rubi")
-    self:CheckRaidIDandRelevance(author, msg, 284, "|cffff5050", '[Rr][Uu][Bb][IiYy]%s*2[0-5]', "Das Rubinsanktum;25;2", "Rubi")
+    self:CheckRaidIDandRelevance(author, msg, 271, "|cffff5050", '[Rr][Uu][Bb][IiYy]%s*1[089]', "Das Rubinsanktum;10;1", "Rubi")
+    self:CheckRaidIDandRelevance(author, msg, 284, "|cffff5050", '[Rr][Uu][Bb][IiYy]%s*[1-2][0-9]', "Das Rubinsanktum;25;2", "Rubi")
     self:CheckRaidIDandRelevance(author, msg, 232, "|cff993300", '[Pp][Dd][Kk]%s*1[0-9]', "Prüfung des Kreuzfahrers;10;1", "PdK")
     self:CheckRaidIDandRelevance(author, msg, 245, "|cff993300", '[Pp][Dd][Kk]%s*2[0-9]', "Prüfung des Kreuzfahrers;25;2", "PdK")
     self:CheckRaidIDandRelevance(author, msg, 245, "|cff993300", '[Pp][Dd][Oo][Kk]%s*1[0-9]', "Prüfung des Kreuzfahrers;10;3", "PdoK")
@@ -2271,17 +2109,17 @@ function AstronaX:UpdateLootMethod()
   -- falls player target ein gegner ist
   if UnitIsEnemy("player","target") then
     --falls das target boss level hat
-    if UnitLevel("target") == -1 and GetLootMethod() ~= "master" and GetGroupCount() > 10 then 
+    if UnitLevel("target") == -1 and GetLootMethod() ~= "master" and GetGroupCount() > 10 then
         if IsLead() then
           SetLootMethod("master", player);
           print(addon_color..l["Loot Method changed to %s."]:format(addon_highlight.."Pluendermeister"..addon_color))
         end
       --lootmethod
-      --"roundrobin"    Round-robin, looting cycles evenly through group members. 
-      --"group"    Group loot, round-robin for normal items, rolling for special ones. 
+      --"roundrobin"    Round-robin, looting cycles evenly through group members.
+      --"group"    Group loot, round-robin for normal items, rolling for special ones.
       --"needbeforegreed"    Need before greed, round-robin for normal items, selective rolling for special ones.
       --"master"    Master looter, designated player distributes loot.
-      --"personalloot"  Personal loot, any loot acquired is placed directly in bags. 
+      --"personalloot"  Personal loot, any loot acquired is placed directly in bags.
     elseif UnitLevel("target") == -1 or UnitLevel("target") == nil then
         --print(addon_color.."Loot Methode nicht geaendert weil im Kampf")
     elseif isInCombat() then
@@ -2297,7 +2135,7 @@ function AstronaX:UpdateLootMethod()
         --3 - Rare
         --4 - Epic
         --5 - Legendary
-        --6 - Artifact 
+        --6 - Artifact
       end
     end
   end
@@ -2307,14 +2145,14 @@ function AstronaX:UpdateMoney()
   local current_money = GetMoney();
   local deposit = current_money - (AstronaXDB[player]["abmv"] * 100 * 100);
   local withdraw = (100 * 100 * AstronaXDB[player]["abmv"] ) - current_money;
-  
+
   if deposit > 100 * 100 * 100  and AstronaXDB[player]["abm"] == 1 then
     print(addon_color..l["Deployed %s to our guildbank."]:format(format_money(deposit, true, true, true)..addon_color));
     DepositGuildBankMoney(deposit);
     PlaySoundFileAstronax("Sound\\Interface\\LootCoinSmall.wav");
   end
-  
-  if withdraw > 100 * 100 * 1 and AstronaXDB[player]["abml"] == 1 then
+
+  if withdraw > 100 * 100 * 100 and AstronaXDB[player]["abml"] == 1 then
     if CanWithdrawGuildBankMoney() then
       if( withdraw <= GetGuildBankMoney() ) then
         print(addon_color..l["Took %s from our guildbank."]:format(format_money(withdraw, true, true, true)..addon_color));
@@ -2333,12 +2171,12 @@ function AstronaX:UpdateWeekly()
 	local questscompleted = {}
 	GetQuestsCompleted(questscompleted)
 	--print("check derzeitigen spieler")
-	
+
 	--[[ ID's of all raid weekly quests:
 	24590, 24589, 24588, 24587, 24586, 24585
 	24584, 24583, 24582, 24581, 24580, 24579
 	]]--
-  
+
   local tmp = self:GetRaidBlocks()
   if tmp and questscompleted ~= nil then
     if questscompleted[13183] or questscompleted[13181]  then
@@ -2354,42 +2192,6 @@ function AstronaX:UpdateWeekly()
   end
 	--print("weekly bisher nicht abgeschlossen")
 	return false
-end
-
-function AstronaX:AutoTurnInQuest()
-	if GetNumQuestChoices() == 0 then
-		QuestRewardCompleteButton_OnClick();
-	end
-end
-
-function AstronaX:AutoCompleteQuest()
-	if IsQuestCompletable() then
-		CompleteQuest()
-		QuestFrameCompleteButton:Enable()
-	end
-end
-
-function AstronaX:PlaySankySounds(msg)
-	--  The sound volume slider setting the sound should use, one of:
-	-- "Master", "SFX" (Sound),
-	-- "Music", "Ambience",
-	-- "Dialog"
-	-- Defaults to "SFX" if not specified.
-	
-	for regex in pairs(sanky_sounds) do
-		
-		-- matching the search text
-		if msg:match(regex) ~= nil then			
-		
-			-- limit playback times to 3sec delay
-			if last_sound_played["sanky_sounds"] == nill or (GetTime()-last_sound_played["sanky_sounds"]) >= 3 then
-				last_sound_played["sanky_sounds"] = GetTime();
-				PlaySoundFile("Interface\\AddOns\\AstronaX\\Sounds\\"..sanky_sounds[regex], "Master");
-			end
-			
-			return
-		end
-	end
 end
 
 function AstronaX:UpdateTalents()
@@ -2411,18 +2213,18 @@ function AstronaX:UpdateTalents()
     end
     thisCache.specGroupName = i
   end
-  
+
   activeGroup = GetActiveTalentGroup()
   local curCache = specCache[activeGroup]
-  
+
   local a = specCache[activeGroup][1].pointsSpent or 0
   local b = specCache[activeGroup][2].pointsSpent or 0
   local c = specCache[activeGroup][3].pointsSpent	or 0
-  
+
   --print(curCache.specGroupName.." Talents with ("..a.."/"..b.."/"..c..") known as "..curCache.specName)
   player_talents_points = "("..red..a..yellow.."/"..orange..b..yellow.."/"..green..c..")"
   player_talents_image = curCache.mainTabIcon
-  
+
   if curCache.mainTabIcon ~= nil then
     if curCache.specGroupName == 1 then
       AstronaXDB[player]["talentspec_primary"] = curCache.mainTabIcon;
@@ -2438,7 +2240,7 @@ function AstronaX:OnClick(button)
     if IsShiftKeyDown() then
       self:ToggleTalents()
     elseif IsAltKeyDown()  then
-      self:CreateRaidApplyGUI() 
+      self:CreateRaidApplyGUI()
     elseif IsControlKeyDown() then
       self:CreateRaidSearchGUI()
     else
@@ -2456,6 +2258,7 @@ function AstronaX:ToggleConfig()
     isApplicationOpen = false
   end
 end
+
 
 function AstronaX:ToggleTalents()
   if GetNumTalentGroups() < 2 then
@@ -2521,15 +2324,15 @@ function AstronaX:OnTextUpdate()
 	local count_honor = count_honor or GetItemCount(selectionIds[4])
 	local count_herosim = count_herosim or GetItemCount(selectionIds[5])
 	local count_steinbewahrer = count_steinbewahrer or GetItemCount(selectionIds[6])
-	local count_pvphonor = count_pvphonor or GetHonorCurrency()	
+	local count_pvphonor = count_pvphonor or GetHonorCurrency()
 	local count_timer_1kw = GetWintergraspWaitTime()
   local Rep_name, Rep_standing, Rep_min, Rep_max, Rep_value = GetWatchedFactionInfo()
 
-  
+
   local texture = ""
   if count_timer_1kw == nil then
     count_timer_1kw = "|TInterface\\Icons\\ability_parry:12|t ".."|cffff0000"..l["Battle"]
-    
+
     if last_sound_played["1kw"] == nil then last_sound_played["1kw"] = GetTime() end
     if AstronaXDB[player]["tkww "] == 1 and not(GetZoneText() == "Wintergrasp" or GetZoneText() == "Tausendwintersee") and (GetTime()-last_sound_played["1kw"]) >= 20 then
       last_sound_played["1kw"] = GetTime();
@@ -2542,8 +2345,8 @@ function AstronaX:OnTextUpdate()
     for i=1,40 do
       if (UnitBuff("player",i) == "Essenz von Tausendwinter") then thousend_winter = UnitFactionGroup("player") end
     end
-    
-    texture = "|TInterface\\Icons\\spell_frost_wizardmark:12|t "  
+
+    texture = "|TInterface\\Icons\\spell_frost_wizardmark:12|t "
     if (GetCurrentMapContinent() == 4 or GetCurrentMapContinent() == -1) then
       if UnitFactionGroup("player") == "Horde" then
         if thousend_winter == "Horde" and ( GetCurrentMapContinent() == -1 or GetCurrentMapContinent() == 4)  then
@@ -2559,7 +2362,7 @@ function AstronaX:OnTextUpdate()
         end
       end
     end
-    
+
     local timeUnit = l["sec"]
     if count_timer_1kw > 60 then
       timeUnit = l["min"]
@@ -2567,13 +2370,13 @@ function AstronaX:OnTextUpdate()
     else
       count_timer_1kw = texture.." "..math.floor(count_timer_1kw).." "..timeUnit
     end
-      
+
   end
 
   local ilvl_average, ilvl_minimum = self:GetItemLevel()
   AstronaXDB[player]["ilvl"] = ilvl_average
   AstronaXDB[player]["ilvl_minimum"] = ilvl_minimum
-  
+
 	if UnitLevel("player") >= 15 and AstronaXDB[player] then
 		AstronaXDB[player]["class"] = GetClassName()
 		if GearScore_GetScore(UnitName("player"), "player") ~= nil then
@@ -2581,15 +2384,15 @@ function AstronaX:OnTextUpdate()
     else
       AstronaXDB[player]["gearscore"] = 0
 		end
-    
-		AstronaXDB[player][selectionIds[1]] = count_frost;	
-		AstronaXDB[player][selectionIds[2]] = count_triumph;	
-		AstronaXDB[player][selectionIds[3]] = count_conquest;	
-		AstronaXDB[player][selectionIds[4]] = count_honor;	
-		AstronaXDB[player][selectionIds[5]] = count_herosim;	
-		AstronaXDB[player][selectionIds[6]] = count_steinbewahrer;	
-		AstronaXDB[player]["honor"] = count_pvphonor;	
-		AstronaXDB[player]["money"] = GetMoney();	
+
+		AstronaXDB[player][selectionIds[1]] = count_frost;
+		AstronaXDB[player][selectionIds[2]] = count_triumph;
+		AstronaXDB[player][selectionIds[3]] = count_conquest;
+		AstronaXDB[player][selectionIds[4]] = count_honor;
+		AstronaXDB[player][selectionIds[5]] = count_herosim;
+		AstronaXDB[player][selectionIds[6]] = count_steinbewahrer;
+		AstronaXDB[player]["honor"] = count_pvphonor;
+		AstronaXDB[player]["money"] = GetMoney();
 		AstronaXDB[player]["armor"] = self:GetArmorStatus();
     AstronaXDB[player]["title"] = GetTitleName(GetCurrentTitle())
 	end
@@ -2641,7 +2444,7 @@ function AstronaX:OnTextUpdate()
   end
   if AstronaXDB[player]["bar_og"] == 1 then
     local fulldisplay = false
-    if AstronaXDB[player]["bar_gg"] == 0 then 
+    if AstronaXDB[player]["bar_gg"] == 0 then
       fulldisplay = true
     end
     text = text..format_money(GetMoney(), true, fulldisplay, true).."|r"..spacertab
@@ -2669,7 +2472,7 @@ function AstronaX:OnTextUpdate()
 
       local time_passed_by = GetTime() - time_on_login
       if xp_gain > 0 then
-        text = text..yellow.." "..round(xp_gain / time_passed_by / 60).." xp/min"
+        text = text..yellow.." "..round(xp_gain / time_passed_by / 60).." p/min"
       end
     end
   end
@@ -2677,12 +2480,12 @@ function AstronaX:OnTextUpdate()
   self:SetText(text)
   return text
 end
-  
+
 function AstronaX:OnTooltipUpdate()
   if not(isInCombat(player)) then
     self:OnTextUpdate()
     self:GetRaidBlocks()
-    
+
     local cat = Tablet:AddCategory()
     if FuBar == nil then
       cat = Tablet:AddCategory('columns', 1)
@@ -2705,13 +2508,13 @@ function AstronaX:OnTooltipUpdate()
       local total_money = 0
       for i in pairs(sorted_table) do
         local _, v = sorted_table[i], AstronaXDB[ sorted_table[i] ]
-        
+
         if v["money"] ~= nil and v["money"] > 0 then
           total_money = total_money + v["money"]
         end
       end
 
-      local headers = {}      
+      local headers = {}
       headers['text'] = ""
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_gearscore"], "|TInterface\\Icons\\Ability_warrior_defensivestance:16|t")
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_repair"], "|TInterface\\Icons\\trade_blacksmithing:16|t")
@@ -2731,31 +2534,41 @@ function AstronaX:OnTooltipUpdate()
       for i, db_player in pairs(sorted_table) do
         local _, v = sorted_table[i], AstronaXDB[ sorted_table[i] ]
 
-        if ( 
-          v["class"] ~= nil
+        if (
+          (v["talentspec_primary"] or v["talentspec_secondary"]) and
+          v["class"] and
+          v["gearscore"] and
+          v["armor"] and
+          v[selectionIds[1]] ~= nil and
+          v[selectionIds[2]] ~= nil and
+          v[selectionIds[3]] ~= nil and
+          v[selectionIds[4]] ~= nil and
+          v[selectionIds[5]] ~= nil and
+          v[selectionIds[6]] ~= nil and
+          v["honor"] ~= nil and
+          v["money"] ~= nil
         ) then
-          
-          local color_stein = "|cffCCEEFF"			
+          if v["title"] ~= nil then
+            v["title"] = ""
+          end
+
+          local color_stein = "|cffCCEEFF"
           if v[selectionIds[6]] < 30 then color_stein = "|cff445566" end
           if v[selectionIds[6]] == 0 then color_stein = color_blacked end
-          
-          local color_honor = "|cffFF0000"			
+
+          local color_honor = "|cffFF0000"
           if v["honor"] < 10000 then color_honor = "|cff660000" end
           if v["honor"] <= 2000 then color_honor = color_blacked end
-          local rounded_honor =  0
-		  
-		  if v["honor"] ~= nil then
-			rounded_honor = str_pad(string.format('%.1f', math.floor( (v["honor"] /1000 * 10^1) + 0.5) / (10^1)),2).." k"
-		  end
-          
-          local color_200 = "|cffCCEEFF"			
+          local rounded_honor =  str_pad(string.format('%.1f', math.floor( (v["honor"] /1000 * 10^1) + 0.5) / (10^1)),2).." k"
+
+          local color_200 = "|cffCCEEFF"
           if v[selectionIds[5]] < 10 then color_200 = "|cff445566" end
           if v[selectionIds[5]] == 0 then color_200 = color_blacked end
 
           local color_213 = "|cffFF99EE"
           if v[selectionIds[4]] < 10 then color_213 = "|cff884477" end
           if v[selectionIds[4]] == 0 then color_213 = color_blacked end
-          
+
           local color_226 = "|cffFFEA80"
           if v[selectionIds[3]] < 10 then color_226 = "|cff887540" end
           if v[selectionIds[3]] == 0 then color_226 = color_blacked end
@@ -2763,86 +2576,47 @@ function AstronaX:OnTooltipUpdate()
           local color_232 = "|cff8800CC"
           if v[selectionIds[2]] < 10 then color_232 = "|cff440088" end
           if v[selectionIds[2]] == 0 then color_232 = color_blacked end
-          
+
           local color_264 = "|cff0099ff"
           if v[selectionIds[1]] < 23 then color_264 = "|cff0044aa" end
           if v[selectionIds[1]] == 0 then color_264 = color_blacked end
-          
+
           local talents_specs = ""
-          if v["talentspec_primary"] ~= nil then
+          if v["talentspec_primary"] then
             talents_specs = talents_specs.."|T"..v["talentspec_primary"]..":16|t "
           else
             talents_specs = talents_specs.."|T"..unknownSpecIcon..":16|t "
           end
-          
-          if v["talentspec_secondary"] ~= nil then
+
+          if v["talentspec_secondary"] then
             talents_specs = talents_specs.."|T"..v["talentspec_secondary"]..":16|t "
           else
             talents_specs = talents_specs.."|T"..unknownSpecIcon..":16|t "
           end
-          
-		  local armor_text = ""
-		  if v["armor"] ~= nil then
-			armor_text = self:GetPercentageTextColor(tonumber(v["armor"]))..v["armor"]..yellow.." %"
-		  end
-          
 
-		  local professions = "|T"..unknownSpecIcon..":16|t "
-		  if v["professions_1_name"] ~= nil and v["professions_1_texture"] ~= nil then
-			professions = v["professions_1_texture"].." "
-		  end
-		  
-		  if v["professions_2_name"] ~= nil and v["professions_2_texture"] ~= nil then
-			professions = professions..v["professions_2_texture"]
-		  else
-			professions = professions.."|T"..unknownSpecIcon..":16|t"
-		  end
+          local armor_text = self:GetPercentageTextColor(tonumber(v["armor"]))..v["armor"]..yellow.." %"
 
-          local cols = {}      
-          cols['text'] = talents_specs.." "..professions.." "..GetClassColor(v["class"])..db_player
-		  if v["tooltip_gearscore"] ~= nil then
-			self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_gearscore"], "|cff"..GetGearscoreColored(v["gearscore"]))
-		  end
-		  if armor_text ~= nil then
-			self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_repair"], armor_text)
-		  end
-		  if v[selectionIds[1]] ~= nil then
-			self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_264"], color_264..v[selectionIds[1]])
-		  end
-		  if v[selectionIds[2]] ~= nil then
-			self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_232"], color_232..v[selectionIds[2]])
-		  end
-		  if v[selectionIds[3]] ~= nil then
-			self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_226"], color_226..v[selectionIds[3]])
-		  end
-		  if v[selectionIds[4]] ~= nil then
-			self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_213"], color_213..v[selectionIds[4]])
-		  end
-		  if v[selectionIds[5]] ~= nil then
-			self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_200"], color_200..v[selectionIds[5]])
-		  end
-		  if v[selectionIds[6]] ~= nil then
-			self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_1kw"], color_stein..v[selectionIds[6]])
-		  end
-		  if rounded_honor ~= nil then
-			self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_honor"], color_honor..rounded_honor)
-		  end
-		  if v["money"] ~= nil then
-			self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_money"], format_money(v["money"],false))
-		  end
-		  if v["title"] ~= nil then
-			self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_title"], v["title"])
-		  end
+          local cols = {}
+          cols['text'] = talents_specs.." "..GetClassColor(v["class"])..db_player
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_gearscore"], "|cff"..GetGearscoreColored(v["gearscore"]))
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_repair"], armor_text)
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_264"], color_264..v[selectionIds[1]])
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_232"], color_232..v[selectionIds[2]])
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_226"], color_226..v[selectionIds[3]])
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_213"], color_213..v[selectionIds[4]])
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_200"], color_200..v[selectionIds[5]])
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_1kw"], color_stein..v[selectionIds[6]])
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_honor"], color_honor..rounded_honor)
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_money"], format_money(v["money"],false))
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_title"], v["title"])
 
-		  if v["gearscore"] ~= nil and v["talent_specname"] ~= nil then
-			cols['func'] = function() self:CreateRaidApplyGUI(v["class"], v["gearscore"], v["talent_specname"]); end
-		  end
+          cols['func'] = function() self:CreateRaidApplyGUI(v["class"], v["gearscore"], v["talent_specname"]); end
           cat:AddLine(cols)
         end
       end
     end
     if AstronaXDB[player]["tooltip_instancelocks"] == 1 then
-      local headers = {}      
+      local headers = {}
       headers['text'] = ""
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_dailyweekly"], "|TInterface\\Icons\\Inv_misc_frostemblem_01:20|t|n2x / 5x")
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_pvpweekly"], "|TInterface\\Icons\\achievement_win_wintergrasp:20|t|nPvP")
@@ -2862,78 +2636,78 @@ function AstronaX:OnTooltipUpdate()
       for i, db_player in pairs(sorted_table) do
         local _, v = sorted_table[i], AstronaXDB[ sorted_table[i] ]
         if (
-          (v["talentspec_primary"] or v["talentspec_secondary"]) and 
-          v["class"] and 
-          v["ilvl"] and 
+          (v["talentspec_primary"] or v["talentspec_secondary"]) and
+          v["class"] and
+          v["ilvl"] and
           v["ilvl_minimum"]
         ) then
           local dailyheroic = green.."+"
           if self:GetDailyStatus(db_player) then
             dailyheroic = red.."-"
           end
-          
+
           local weeklyraidquest = green.."+"
           if self:GetWeeklyStatus(db_player) then
             weeklyraidquest = red.."-"
           end
-          
+
           local weeklypvpquest = green.."+"
           if v["weeklypvpquest"] ~= nil and v["weeklypvpquest"] > time() then
             weeklypvpquest = red.."-"
           end
-          
+
           local talents_specs = ""
           if v["talentspec_primary"] then
             talents_specs = talents_specs.."|T"..v["talentspec_primary"]..":16|t "
           else
             talents_specs = talents_specs.."|T"..unknownSpecIcon..":16|t "
           end
-          
+
           if v["talentspec_secondary"] then
             talents_specs = talents_specs.."|T"..v["talentspec_secondary"]..":16|t "
           else
             talents_specs = talents_specs.."|T"..unknownSpecIcon..":16|t "
           end
-        
-          local ak = self:GetRaidstatusColor(v[l["Archavons Kammer"]..";10;1"], v["ilvl_minimum"], 251, 10)
+
+          local ak = self:GetRaidstatusColor(v["Archavons Kammer;10;1"], v["ilvl_minimum"], 251, 10)
           ak = ak.." / "
-          ak = ak..self:GetRaidstatusColor(v[l["Archavons Kammer"]..";25;2"], v["ilvl_minimum"], 264, 25)
-          
-          local naxx = self:GetRaidstatusColor(v[l["Naxxramas"]..";10;1"], v["ilvl_minimum"], 200, 10)
+          ak = ak..self:GetRaidstatusColor(v["Archavons Kammer;25;2"], v["ilvl_minimum"], 264, 25)
+
+          local naxx = self:GetRaidstatusColor(v["Naxxramas;10;1"], v["ilvl_minimum"], 200, 10)
           naxx = naxx.." / "
-          naxx = naxx..self:GetRaidstatusColor(v[l["Naxxramas"]..";25;2"], v["ilvl_minimum"], 213, 25)
-          
-          local obs = self:GetRaidstatusColor(v[l["Das Obsidiansanktum"]..";10;1"], v["ilvl_minimum"], 200, 10)
+          naxx = naxx..self:GetRaidstatusColor(v["Naxxramas;25;2"], v["ilvl_minimum"], 213, 25)
+
+          local obs = self:GetRaidstatusColor(v["Das Obsidiansanktum;10;1"], v["ilvl_minimum"], 200, 10)
           obs = obs.." / "
-          obs = obs..self:GetRaidstatusColor(v[l["Das Obsidiansanktum"]..";25;2"], v["ilvl_minimum"], 213, 25)
-          
-          local uld = self:GetRaidstatusColor(v[l["Ulduar"]..";10;1"], v["ilvl_minimum"], 219, 10)
+          obs = obs..self:GetRaidstatusColor(v["Das Obsidiansanktum;25;2"], v["ilvl_minimum"], 213, 25)
+
+          local uld = self:GetRaidstatusColor(v["Ulduar;10;1"], v["ilvl_minimum"], 219, 10)
           uld = uld.." / "
-          uld = uld..self:GetRaidstatusColor(v[l["Ulduar"]..";25;2"], v["ilvl_minimum"], 226, 25)
-          
-          local ony = self:GetRaidstatusColor(v[l["Onyxias Hort"]..";10;1"], v["ilvl_minimum"], 232, 10)
+          uld = uld..self:GetRaidstatusColor(v["Ulduar;25;2"], v["ilvl_minimum"], 226, 25)
+
+          local ony = self:GetRaidstatusColor(v["Onyxias Hort;10;1"], v["ilvl_minimum"], 232, 10)
           ony = ony.." / "
-          ony = ony..self:GetRaidstatusColor(v[l["Onyxias Hort"]..";25;2"], v["ilvl_minimum"], 245, 25)
-          
-          local pdk = self:GetRaidstatusColor(v[l["Prüfung des Kreuzfahrers"]..";10;1"], v["ilvl_minimum"], 232, 10)
+          ony = ony..self:GetRaidstatusColor(v["Onyxias Hort;25;2"], v["ilvl_minimum"], 245, 25)
+
+          local pdk = self:GetRaidstatusColor(v["Prüfung des Kreuzfahrers;10;1"], v["ilvl_minimum"], 232, 10)
           pdk = pdk.." / "
-          pdk = pdk..self:GetRaidstatusColor(v[l["Prüfung des Kreuzfahrers"]..";25;2"], v["ilvl_minimum"], 254, 25)
-          
-          local pdok = self:GetRaidstatusColor(v[l["Prüfung des Kreuzfahrers"]..";10;3"], v["ilvl_minimum"], 245, 10)
+          pdk = pdk..self:GetRaidstatusColor(v["Prüfung des Kreuzfahrers;25;2"], v["ilvl_minimum"], 254, 25)
+
+          local pdok = self:GetRaidstatusColor(v["Prüfung des Kreuzfahrers;10;3"], v["ilvl_minimum"], 245, 10)
           pdok = pdok.." / "
-          pdok = pdok..self:GetRaidstatusColor(v[l["Prüfung des Kreuzfahrers"]..";25;4"], v["ilvl_minimum"], 258, 25)
-          
-          local icc = self:GetRaidstatusColor(v[l["Eiskronenzitadelle"]..";10;1"], v["ilvl_minimum"], 264, 10)
+          pdok = pdok..self:GetRaidstatusColor(v["Prüfung des Kreuzfahrers;25;4"], v["ilvl_minimum"], 258, 25)
+
+          local icc = self:GetRaidstatusColor(v["Eiskronenzitadelle;10;1"], v["ilvl_minimum"], 264, 10)
           icc = icc.." / "
-          icc = icc..self:GetRaidstatusColor(v[l["Eiskronenzitadelle"]..";25;2"], v["ilvl_minimum"], 277, 25)
-          
-          local halion = self:GetRaidstatusColor(v[l["Das Rubinsanktum"]..";10;1"], v["ilvl_minimum"], 271, 10)
+          icc = icc..self:GetRaidstatusColor(v["Eiskronenzitadelle;25;2"], v["ilvl_minimum"], 277, 25)
+
+          local halion = self:GetRaidstatusColor(v["Das Rubinsanktum;10;1"], v["ilvl_minimum"], 271, 10)
           halion = halion.." / "
-          halion = halion..self:GetRaidstatusColor(v[l["Das Rubinsanktum"]..";25;2"], v["ilvl_minimum"], 284, 25)
-             
+          halion = halion..self:GetRaidstatusColor(v["Das Rubinsanktum;25;2"], v["ilvl_minimum"], 284, 25)
+
           local cols = {}
           cols['text'] = talents_specs..GetClassColor(v["class"])..db_player
-          
+
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_dailyweekly"], dailyheroic..yellow.." / "..weeklyraidquest)
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_pvpweekly"], weeklypvpquest)
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_ak"], ak)
@@ -2958,6 +2732,7 @@ function AstronaX:OnTooltipUpdate()
     'text2', color_redgrayed..l["Instance has ID"]..yellow.." / "..color_greengrayed..l["Instance unvisited"]..yellow.." / "..color_yellowgrayed..l["No better Gear available"]
     )
 
+
     cat = Tablet:AddCategory('columns', 3)
     cat:AddLine(
     'text', green.."Left Mouse Click",
@@ -2972,7 +2747,7 @@ function AstronaX:OnTooltipUpdate()
     'justify', "LEFT",
     'text2', l["Apply"],
     'func', function()
-      self:CreateRaidApplyGUI() 
+      self:CreateRaidApplyGUI()
     end)
 
     cat:AddLine(
@@ -2986,11 +2761,11 @@ function AstronaX:OnTooltipUpdate()
     cat:AddLine(
     'text', purple.."CTRL "..yellow.."+ "..green.."Left Mouse Click",
     'justify', "LEFT",
-    'text2', l["Raid Member Search"],
+    'text2', "Raid Search GUI",
     'func', function()
       self:CreateRaidSearchGUI()
      end)
-   
+
     cat:AddLine(
     'text', green.."Left Mouse "..yellow.."Click on Character",
     'justify', "LEFT",
@@ -2999,7 +2774,7 @@ function AstronaX:OnTooltipUpdate()
   else
     cat = Tablet:AddCategory('columns', 1)
     cat:AddLine(
-    'text', l["Disabled during combat"],
+    'text', "Disabled during combat",
     'justify', "LEFT"
     )
   end
@@ -3008,17 +2783,17 @@ end
 function AstronaX:create_tooltip_col(cols, tooltip_setting, tooltip_val)
   if tooltip_setting == 1 then
     cols['text'..(GetArraySize(cols)+1)] = tooltip_val
-  end 
+  end
 end
 
 function AstronaX:CreateRaidApplyGUI( class, gearscore, talent_specname )
   if class == nil then class = AstronaXDB[player]["class"] end
   if gearscore == nil then gearscore = AstronaXDB[player]["gearscore"] end
   if talent_specname == nil then talent_specname = AstronaXDB[player]["talent_specname"] end
-  
+
   if isApplicationOpen == false and class ~= nil then
     isApplicationOpen = true
-    
+
     class = FirstCharUpper(class)
     gearscore = string.format('%.1f', math.floor( (gearscore /1000 * 10^1) + 0.5) / (10^1)).."k"
     for k, v in pairs(short_spec_names) do
@@ -3026,7 +2801,7 @@ function AstronaX:CreateRaidApplyGUI( class, gearscore, talent_specname )
         talent_specname = v
       end
     end
-    
+
     local AceGUI = LibStub("AceGUI-3.0")
     local frame = AceGUI:Create("Frame")
     frame:SetTitle(l["Whisper Spec + GS"])
@@ -3039,25 +2814,25 @@ function AstronaX:CreateRaidApplyGUI( class, gearscore, talent_specname )
     frame:SetLayout("Flow")
     frame:SetWidth(145)
     frame:SetHeight(250)
-    
+
     local dropdown_need = AceGUI:Create("Dropdown")
     dropdown_need:SetLabel(l["Select need:"])
     dropdown_need:SetWidth(100)
     dropdown_need:SetList({
-      ["need PvE"] = l["PvE"],
-      ["need PvP"] = l["PvP"],
-      ["No Need"] = l["NoNeed"],
+      ["need PvE"] = "PvE",
+      ["need PvP"] = "PvP",
+      ["No Need"] = "NoNeed",
       [""] = ""
     })
     frame:AddChild(dropdown_need)
     dropdown_need:SetValue("need PvE")
-    
+
     local dropdown_names = AceGUI:Create("Dropdown")
     dropdown_names:SetLabel(l["Whisper Target:"])
     dropdown_names:SetWidth(100)
     dropdown_names:SetList({})
     frame:AddChild(dropdown_names)
-    
+
     local biggest_value = ""
     local biggest_key = ""
     for k,v in loop_table_sorted(world_player_list) do -- sorts by v = Value
@@ -3067,7 +2842,7 @@ function AstronaX:CreateRaidApplyGUI( class, gearscore, talent_specname )
       end
       dropdown_names:AddItem(k, k)
     end
-    if biggest_key == "" then 
+    if biggest_key == "" then
       biggest_key = player
     end
     dropdown_names:AddItem(player, player)
@@ -3083,13 +2858,13 @@ function AstronaX:CreateRaidApplyGUI( class, gearscore, talent_specname )
     local button = AceGUI:Create("Button")
     button:SetText(l["Apply"])
     button:SetWidth(100)
-    button:SetCallback("OnClick", 
+    button:SetCallback("OnClick",
       function()
         local comment = editbox:GetText()
         local need = dropdown_need:GetValue()
         local target = dropdown_names:GetValue()
         local msg = l["%s %s with %sgs"]:format(talent_specname, class, gearscore)
-        
+
         if target ~= nil and target ~= "" then
           if need ~= nil and need ~= "" then
             msg = msg.." "..need
@@ -3097,12 +2872,7 @@ function AstronaX:CreateRaidApplyGUI( class, gearscore, talent_specname )
           if comment ~= nil and comment ~= "" then
             msg = msg.." "..comment
           end
-		  
-		  if last_msg_send ~= msg then
-			last_msg_send = msg;
-			SendChatMessage(msg, "WHISPER" ,COMMON ,target); 
-		  end
-		  
+          SendChatMessage(msg, "WHISPER" ,COMMON ,target);
           isApplicationOpen = false
           AceGUI:Release(frame)
         end
@@ -3114,7 +2884,7 @@ end
 function AstronaX:SetDBMTimer()
   if isApplicationOpen == false then
     isApplicationOpen = true
-    
+
     local AceGUI = LibStub("AceGUI-3.0")
     local frame = AceGUI:Create("Frame")
     frame:SetTitle(l["SetDBMTimer"])
@@ -3129,16 +2899,16 @@ function AstronaX:SetDBMTimer()
     frame:SetHeight(145)
 
     local slider_time = AceGUI:Create("Slider")
-    slider_time:SetLabel(l["Units"])
+    slider_time:SetLabel("sec")
     slider_time:SetSliderValues(0, 60, 5)
     slider_time:SetValue(0)
     slider_time:SetWidth(300)
     slider_time:SetValue(15)
-    
+
     local button_pause = AceGUI:Create("Button")
     button_pause:SetText(l["Pause"])
     button_pause:SetWidth(120)
-    button_pause:SetCallback("OnClick", 
+    button_pause:SetCallback("OnClick",
       function()
         RunSlashCmd("/dbm break "..slider_time:GetValue())
       end)
@@ -3146,7 +2916,7 @@ function AstronaX:SetDBMTimer()
     local button_pull = AceGUI:Create("Button")
     button_pull:SetText(l["Pull"])
     button_pull:SetWidth(120)
-    button_pull:SetCallback("OnClick", 
+    button_pull:SetCallback("OnClick",
       function()
         RunSlashCmd("/dbm pull "..slider_time:GetValue())
       end)
@@ -3154,7 +2924,7 @@ function AstronaX:SetDBMTimer()
     local button_readycheck = AceGUI:Create("Button")
     button_readycheck:SetText(l["Readycheck"])
     button_readycheck:SetWidth(120)
-    button_readycheck:SetCallback("OnClick", 
+    button_readycheck:SetCallback("OnClick",
       function()
         RunSlashCmd("/readycheck")
       end)
@@ -3166,10 +2936,10 @@ function AstronaX:SetDBMTimer()
   end
 end
 
-function AstronaX:CreateRaidSearchGUI() 
+function AstronaX:CreateRaidSearchGUI()
   if isApplicationOpen == false then
     isApplicationOpen = true
-    
+
     local AceGUI = LibStub("AceGUI-3.0")
     local scrollframe = AceGUI:Create("ScrollFrame")
     local frame = AceGUI:Create("Frame")
@@ -3189,50 +2959,35 @@ function AstronaX:CreateRaidSearchGUI()
     editbox:SetNumLines(1)  -- Set the number of lines to be displayed in the editbox.
     editbox:SetMaxLetters(256)  -- Set the maximum number of letters that can be entered (0 for unlimited).
     editbox:DisableButton(true) -- Disable the "Okay" Button
-    
+
     local slider_tanks_max = 5
     local slider_heals_max = 5
     local slider_dds_max = 19
     local slider_meles_max = 19
     local slider_ranges_max = 19
-     
+
     local slider_tanks = AceGUI:Create("Slider")
-    slider_tanks:SetLabel(l["Tanks"])
+    slider_tanks:SetLabel("Tanks")
     slider_tanks:SetSliderValues(0, slider_tanks_max, 1)
     slider_tanks:SetValue(0)
-    
-	local checkbox_or_heals = AceGUI:Create("CheckBox")
-    checkbox_or_heals:SetType("checkbox")
-    checkbox_or_heals:SetLabel(l["or"])
-    checkbox_or_heals:SetValue(false)	
-	
+
     local slider_heals = AceGUI:Create("Slider")
-    slider_heals:SetLabel(l["Heals"])
+    slider_heals:SetLabel("Heals")
     slider_heals:SetSliderValues(0, slider_heals_max, 1)
     slider_heals:SetValue(0)
-	
-	local checkbox_or_meles = AceGUI:Create("CheckBox")
-    checkbox_or_meles:SetType("checkbox")
-    checkbox_or_meles:SetLabel(l["or"])
-    checkbox_or_meles:SetValue(false)	
-	    
+
     local slider_meles = AceGUI:Create("Slider")
-    slider_meles:SetLabel(l["Meles"])
+    slider_meles:SetLabel("Meles")
     slider_meles:SetSliderValues(0, slider_meles_max, 1)
     slider_meles:SetValue(0)
-	
-	local checkbox_or_ranges = AceGUI:Create("CheckBox")
-    checkbox_or_ranges:SetType("checkbox")
-    checkbox_or_ranges:SetLabel(l["or"])
-    checkbox_or_ranges:SetValue(false)	
-    
+
     local slider_ranges = AceGUI:Create("Slider")
-    slider_ranges:SetLabel(l["Ranges"])
+    slider_ranges:SetLabel("Ranges")
     slider_ranges:SetSliderValues(0, slider_ranges_max, 1)
     slider_ranges:SetValue(0)
-    
+
     local dropdown_raid = AceGUI:Create("Dropdown")
-    dropdown_raid:SetLabel(l["Raid"]..":")
+    dropdown_raid:SetLabel("Raid:")
     dropdown_raid:SetWidth(125)
     dropdown_raid:SetList({
       ["AK10"] = "AK10",
@@ -3255,7 +3010,7 @@ function AstronaX:CreateRaidSearchGUI()
       ["Rubi10"] = "Rubi10",
       ["Rubi25"] = "Rubi25"
     })
-    dropdown_raid:SetCallback("OnValueChanged", function() 
+    dropdown_raid:SetCallback("OnValueChanged", function()
       if string.sub( dropdown_raid:GetValue(),string.len(dropdown_raid:GetValue())-1,string.len(dropdown_raid:GetValue()) ) == "25" then
         slider_tanks:SetValue(2)
         slider_heals:SetValue(5)
@@ -3275,45 +3030,45 @@ function AstronaX:CreateRaidSearchGUI()
     slider_ranges:SetValue(3)
     -------------------------------------------------------------------------------------------------------------------
     local checkbox_tank_dk = AceGUI:Create("CheckBox")
-    checkbox_tank_dk:SetLabel(short_spec_names["Deathknight Blut"])
+    checkbox_tank_dk:SetLabel("Deathknight Blut")
     checkbox_tank_dk:SetImage("Interface\\Icons\\Spell_deathknight_bloodpresence.blp")
-    checkbox_tank_dk:SetCallback("OnValueChanged", function() if checkbox_tank_dk:GetValue() and slider_tanks:GetValue() == 0 then slider_tanks:SetValue(1); end end) 
-    
+    checkbox_tank_dk:SetCallback("OnValueChanged", function() if checkbox_tank_dk:GetValue() and slider_tanks:GetValue() == 0 then slider_tanks:SetValue(1); end end)
+
     local checkbox_tank_druid = AceGUI:Create("CheckBox")
-    checkbox_tank_druid:SetLabel(short_spec_names["Druid Wilder Kampf"])
+    checkbox_tank_druid:SetLabel("Druid Wilder Kampf")
     checkbox_tank_druid:SetImage("Interface\\Icons\\Ability_Racial_BearForm.blp")
-    checkbox_tank_druid:SetCallback("OnValueChanged", function() if checkbox_tank_druid:GetValue() and slider_tanks:GetValue() == 0 then slider_tanks:SetValue(1); end end) 
-    
+    checkbox_tank_druid:SetCallback("OnValueChanged", function() if checkbox_tank_druid:GetValue() and slider_tanks:GetValue() == 0 then slider_tanks:SetValue(1); end end)
+
     local checkbox_tank_paladin = AceGUI:Create("CheckBox")
-    checkbox_tank_paladin:SetLabel(short_spec_names["Paladin Schutz"])
+    checkbox_tank_paladin:SetLabel("Paladin Schutz")
     checkbox_tank_paladin:SetImage("Interface\\Icons\\spell_holy_devotionaura.blp")
-    checkbox_tank_paladin:SetCallback("OnValueChanged", function() if checkbox_tank_paladin:GetValue() and slider_tanks:GetValue() == 0 then slider_tanks:SetValue(1); end end) 
-      
+    checkbox_tank_paladin:SetCallback("OnValueChanged", function() if checkbox_tank_paladin:GetValue() and slider_tanks:GetValue() == 0 then slider_tanks:SetValue(1); end end)
+
     local checkbox_tank_warrior = AceGUI:Create("CheckBox")
-    checkbox_tank_warrior:SetLabel(short_spec_names["Warrior Schutz"])
-    checkbox_tank_warrior:SetImage("Interface\\Icons\\ability_warrior_defensivestance.blp") 
-    checkbox_tank_warrior:SetCallback("OnValueChanged", function() if checkbox_tank_warrior:GetValue() and slider_tanks:GetValue() == 0 then slider_tanks:SetValue(1); end end) 
+    checkbox_tank_warrior:SetLabel("Warrior Schutz")
+    checkbox_tank_warrior:SetImage("Interface\\Icons\\ability_warrior_defensivestance.blp")
+    checkbox_tank_warrior:SetCallback("OnValueChanged", function() if checkbox_tank_warrior:GetValue() and slider_tanks:GetValue() == 0 then slider_tanks:SetValue(1); end end)
     ------------------------------------------------------------------------------------------
     local checkbox_heal_druid = AceGUI:Create("CheckBox")
     checkbox_heal_druid:SetLabel(short_spec_names["Druid Wiederherst."])
     checkbox_heal_druid:SetImage(spec_icons["Druid Wiederherst."])
-    checkbox_heal_druid:SetCallback("OnValueChanged", function() if checkbox_heal_druid:GetValue() and slider_heals:GetValue() == 0 then slider_heals:SetValue(1); end end) 
-    
+    checkbox_heal_druid:SetCallback("OnValueChanged", function() if checkbox_heal_druid:GetValue() and slider_heals:GetValue() == 0 then slider_heals:SetValue(1); end end)
+
     local checkbox_heal_paladin = AceGUI:Create("CheckBox")
     checkbox_heal_paladin:SetLabel(short_spec_names["Paladin Heilig"])
     checkbox_heal_paladin:SetImage(spec_icons["Paladin Heilig"])
     checkbox_heal_paladin:SetCallback("OnValueChanged", function() if checkbox_heal_paladin:GetValue() and slider_heals:GetValue() == 0 then slider_heals:SetValue(1); end end)
-    
+
     local checkbox_heal_diszipriest = AceGUI:Create("CheckBox")
     checkbox_heal_diszipriest:SetLabel(short_spec_names["Priest Disziplin"])
     checkbox_heal_diszipriest:SetImage(spec_icons["Priest Disziplin"])
     checkbox_heal_diszipriest:SetCallback("OnValueChanged", function() if checkbox_heal_diszipriest:GetValue() and slider_heals:GetValue() == 0 then slider_heals:SetValue(1); end end)
-    
+
     local checkbox_heal_holypriest = AceGUI:Create("CheckBox")
     checkbox_heal_holypriest:SetLabel(short_spec_names["Priest Heilig"])
     checkbox_heal_holypriest:SetImage(spec_icons["Priest Heilig"])
     checkbox_heal_holypriest:SetCallback("OnValueChanged", function() if checkbox_heal_holypriest:GetValue() and slider_heals:GetValue() == 0 then slider_heals:SetValue(1); end end)
-    
+
     local checkbox_heal_shaman = AceGUI:Create("CheckBox")
     checkbox_heal_shaman:SetLabel(short_spec_names["Shaman Wiederherst."])
     checkbox_heal_shaman:SetImage(spec_icons["Shaman Wiederherst."])
@@ -3323,42 +3078,42 @@ function AstronaX:CreateRaidSearchGUI()
     checkbox_mele_druid:SetLabel(short_spec_names["Druid Wilder Kampf"])
     checkbox_mele_druid:SetImage(spec_icons["Druid Wilder Kampf"])
     checkbox_mele_druid:SetCallback("OnValueChanged", function() if checkbox_mele_druid:GetValue() and slider_meles:GetValue() == 0 then slider_meles:SetValue(1); end end)
-    
+
     local checkbox_mele_mrogue = AceGUI:Create("CheckBox")
     checkbox_mele_mrogue:SetLabel(short_spec_names["Rogue Meucheln"])
     checkbox_mele_mrogue:SetImage(spec_icons["Rogue Meucheln"])
     checkbox_mele_mrogue:SetCallback("OnValueChanged", function() if checkbox_mele_mrogue:GetValue() and slider_meles:GetValue() == 0 then slider_meles:SetValue(1); end end)
-    
+
     local checkbox_mele_crogue = AceGUI:Create("CheckBox")
     checkbox_mele_crogue:SetLabel(short_spec_names["Rogue Kampf"])
     checkbox_mele_crogue:SetImage(spec_icons["Rogue Kampf"])
     checkbox_mele_crogue:SetCallback("OnValueChanged", function() if checkbox_mele_crogue:GetValue() and slider_meles:GetValue() == 0 then slider_meles:SetValue(1); end end)
-    
+
     local checkbox_mele_awarrior = AceGUI:Create("CheckBox")
     checkbox_mele_awarrior:SetLabel(short_spec_names["Warrior Waffen"])
     checkbox_mele_awarrior:SetImage(spec_icons["Warrior Waffen"])
     checkbox_mele_awarrior:SetCallback("OnValueChanged", function() if checkbox_mele_awarrior:GetValue() and slider_meles:GetValue() == 0 then slider_meles:SetValue(1); end end)
-    
+
     local checkbox_mele_fwarrior = AceGUI:Create("CheckBox")
     checkbox_mele_fwarrior:SetLabel(short_spec_names["Warrior Furor"])
     checkbox_mele_fwarrior:SetImage(spec_icons["Warrior Furor"])
     checkbox_mele_fwarrior:SetCallback("OnValueChanged", function() if checkbox_mele_fwarrior:GetValue() and slider_meles:GetValue() == 0 then slider_meles:SetValue(1); end end)
-    
+
     local checkbox_mele_paladin = AceGUI:Create("CheckBox")
     checkbox_mele_paladin:SetLabel(short_spec_names["Paladin Vergeltung"])
     checkbox_mele_paladin:SetImage(spec_icons["Paladin Vergeltung"])
     checkbox_mele_paladin:SetCallback("OnValueChanged", function() if checkbox_mele_paladin:GetValue() and slider_meles:GetValue() == 0 then slider_meles:SetValue(1); end end)
-    
+
     local checkbox_mele_shaman = AceGUI:Create("CheckBox")
     checkbox_mele_shaman:SetLabel(short_spec_names["Shaman Verstärk."])
     checkbox_mele_shaman:SetImage(spec_icons["Shaman Verstärk."])
     checkbox_mele_shaman:SetCallback("OnValueChanged", function() if checkbox_mele_shaman:GetValue() and slider_meles:GetValue() == 0 then slider_meles:SetValue(1); end end)
-    
+
     local checkbox_mele_bdk = AceGUI:Create("CheckBox")
     checkbox_mele_bdk:SetLabel(short_spec_names["Deathknight Blut"])
     checkbox_mele_bdk:SetImage(spec_icons["Deathknight Blut"])
     checkbox_mele_bdk:SetCallback("OnValueChanged", function() if checkbox_mele_bdk:GetValue() and slider_meles:GetValue() == 0 then slider_meles:SetValue(1); end end)
-    
+
     local checkbox_mele_fdk = AceGUI:Create("CheckBox")
     checkbox_mele_fdk:SetLabel(short_spec_names["Deathknight Frost"])
     checkbox_mele_fdk:SetImage(spec_icons["Deathknight Frost"])
@@ -3366,54 +3121,54 @@ function AstronaX:CreateRaidSearchGUI()
 
     local checkbox_mele_udk = AceGUI:Create("CheckBox")
     checkbox_mele_udk:SetLabel(short_spec_names["Deathknight Unheilig"])
-    checkbox_mele_udk:SetImage(spec_icons["Deathknight Unheilig"])    
-    checkbox_mele_udk:SetCallback("OnValueChanged", function() if checkbox_mele_udk:GetValue() and slider_meles:GetValue() == 0 then slider_meles:SetValue(1); end end) 
+    checkbox_mele_udk:SetImage(spec_icons["Deathknight Unheilig"])
+    checkbox_mele_udk:SetCallback("OnValueChanged", function() if checkbox_mele_udk:GetValue() and slider_meles:GetValue() == 0 then slider_meles:SetValue(1); end end)
     ------------------------------------------------------------------------------------------
     local checkbox_range_druid = AceGUI:Create("CheckBox")
     checkbox_range_druid:SetLabel(short_spec_names["Druid Gleichgewicht"])
     checkbox_range_druid:SetImage(spec_icons["Druid Gleichgewicht"])
     checkbox_range_druid:SetCallback("OnValueChanged", function() if checkbox_range_druid:GetValue() and slider_ranges:GetValue() == 0 then slider_ranges:SetValue(1); end end)
-    
+
     local checkbox_range_fmage = AceGUI:Create("CheckBox")
     checkbox_range_fmage:SetLabel(short_spec_names["Mage Feuer"])
     checkbox_range_fmage:SetImage(spec_icons["Mage Feuer"])
     checkbox_range_fmage:SetCallback("OnValueChanged", function() if checkbox_range_fmage:GetValue() and slider_ranges:GetValue() == 0 then slider_ranges:SetValue(1); end end)
-    
+
     local checkbox_range_amage = AceGUI:Create("CheckBox")
     checkbox_range_amage:SetLabel(short_spec_names["Mage Arkan"])
     checkbox_range_amage:SetImage(spec_icons["Mage Arkan"])
     checkbox_range_amage:SetCallback("OnValueChanged", function() if checkbox_range_amage:GetValue() and slider_ranges:GetValue() == 0 then slider_ranges:SetValue(1); end end)
-    
+
     local checkbox_range_cmage = AceGUI:Create("CheckBox")
     checkbox_range_cmage:SetLabel(short_spec_names["Mage Frost"])
     checkbox_range_cmage:SetImage(spec_icons["Mage Frost"])
     checkbox_range_cmage:SetCallback("OnValueChanged", function() if checkbox_range_cmage:GetValue() and slider_ranges:GetValue() == 0 then slider_ranges:SetValue(1); end end)
-    
+
     local checkbox_range_dwarlock = AceGUI:Create("CheckBox")
     checkbox_range_dwarlock:SetLabel(short_spec_names["Warlock Dämonologie"])
     checkbox_range_dwarlock:SetImage(spec_icons["Warlock Dämonologie"])
     checkbox_range_dwarlock:SetCallback("OnValueChanged", function() if checkbox_range_dwarlock:GetValue() and slider_ranges:GetValue() == 0 then slider_ranges:SetValue(1); end end)
-    
+
     local checkbox_range_awarlock = AceGUI:Create("CheckBox")
     checkbox_range_awarlock:SetLabel(short_spec_names["Warlock Gebrechen"])
     checkbox_range_awarlock:SetImage(spec_icons["Warlock Gebrechen"])
     checkbox_range_awarlock:SetCallback("OnValueChanged", function() if checkbox_range_awarlock:GetValue() and slider_ranges:GetValue() == 0 then slider_ranges:SetValue(1); end end)
-    
+
     local checkbox_range_xwarlock = AceGUI:Create("CheckBox")
     checkbox_range_xwarlock:SetLabel(short_spec_names["Warlock Zerstörung"])
     checkbox_range_xwarlock:SetImage(spec_icons["Warlock Zerstörung"])
     checkbox_range_xwarlock:SetCallback("OnValueChanged", function() if checkbox_range_xwarlock:GetValue() and slider_ranges:GetValue() == 0 then slider_ranges:SetValue(1); end end)
-    
+
     local checkbox_range_shunter = AceGUI:Create("CheckBox")
     checkbox_range_shunter:SetLabel(short_spec_names["Hunter Überleben"])
     checkbox_range_shunter:SetImage(spec_icons["Hunter Überleben"])
     checkbox_range_shunter:SetCallback("OnValueChanged", function() if checkbox_range_shunter:GetValue() and slider_ranges:GetValue() == 0 then slider_ranges:SetValue(1); end end)
-    
+
     local checkbox_range_bhunter = AceGUI:Create("CheckBox")
     checkbox_range_bhunter:SetLabel(short_spec_names["Hunter Tierherrschaft"])
     checkbox_range_bhunter:SetImage(spec_icons["Hunter Tierherrschaft"])
     checkbox_range_bhunter:SetCallback("OnValueChanged", function() if checkbox_range_bhunter:GetValue() and slider_ranges:GetValue() == 0 then slider_ranges:SetValue(1); end end)
-    
+
     local checkbox_range_mhunter = AceGUI:Create("CheckBox")
     checkbox_range_mhunter:SetLabel(short_spec_names["Hunter Treffsicherheit"])
     checkbox_range_mhunter:SetImage(spec_icons["Hunter Treffsicherheit"])
@@ -3423,36 +3178,36 @@ function AstronaX:CreateRaidSearchGUI()
     checkbox_range_eshaman:SetLabel(short_spec_names["Shaman Elementar"])
     checkbox_range_eshaman:SetImage(spec_icons["Shaman Elementar"])
     checkbox_range_eshaman:SetCallback("OnValueChanged", function() if checkbox_range_eshaman:GetValue() and slider_ranges:GetValue() == 0 then slider_ranges:SetValue(1); end end)
-    
+
     local checkbox_range_spriest = AceGUI:Create("CheckBox")
     checkbox_range_spriest:SetLabel(short_spec_names["Priest Schatten"])
     checkbox_range_spriest:SetImage(spec_icons["Priest Schatten"])
     checkbox_range_spriest:SetCallback("OnValueChanged", function() if checkbox_range_spriest:GetValue() and slider_ranges:GetValue() == 0 then slider_ranges:SetValue(1); end end)
-    
+
     --SetValue(flag) - Set the state of the checkbox
     --GetValue() - Get the state of the checkbox
     --ToggleChecked() - Toggle the value
     --OnValueChanged(value) - Fires when the state of the checkbox changes.
     --OnEnter() - Fires when the cursor enters the widget.
-    --OnLeave() - Fires when the cursor leaves the widget. 
-    
+    --OnLeave() - Fires when the cursor leaves the widget.
+
     local button = AceGUI:Create("Button")
     button:SetText(l["Search"])
     button:SetWidth(100)
-    button:SetCallback("OnClick", 
+    button:SetCallback("OnClick",
       function()
         local raid = dropdown_raid:GetValue()
         local tt = slider_tanks:GetValue()
         local hh = slider_heals:GetValue()
         local mdd = slider_meles:GetValue()
         local rdd = slider_ranges:GetValue()
-		
-        if raid == "Weekly" then 
+
+        if raid == "Weekly" then
           for index=1, GetNumQuestLogEntries() do
             --local questheader = select(4,GetQuestLogTitle(index))
             --local questtitle = select(1,GetQuestLogTitle(index))
             local questID = select(9,GetQuestLogTitle(index))
-            
+
             for q=24579,24590 do
               if questID == q then
                 raid = raid.." "..GetQuestLink(index)
@@ -3460,17 +3215,17 @@ function AstronaX:CreateRaidSearchGUI()
             end
           end
         end
-        
+
         local msg_tt = ""
         if tt and tonumber(tt) > 0 then
-          msg_tt = tt.." Tank "
+          msg_tt = " "..tt.." Tank "
           if tonumber(tt) > 1 then
-            msg_tt = tt.." Tanks "
+            msg_tt = " "..tt.." Tanks "
           end
-          
+
           if checkbox_tank_dk:GetValue() or
-            checkbox_tank_druid:GetValue() or 
-            checkbox_tank_paladin:GetValue() or 
+            checkbox_tank_druid:GetValue() or
+            checkbox_tank_paladin:GetValue() or
             checkbox_tank_warrior:GetValue()
           then
             msg_tt = msg_tt.."( "
@@ -3478,45 +3233,41 @@ function AstronaX:CreateRaidSearchGUI()
             if checkbox_tank_druid:GetValue() then msg_tt = msg_tt..short_spec_names["Druid Wilder Kampf"].." " end
             if checkbox_tank_paladin:GetValue() then msg_tt = msg_tt..short_spec_names["Paladin Schutz"].." " end
             if checkbox_tank_warrior:GetValue() then msg_tt = msg_tt..short_spec_names["Warrior Schutz"].." " end
-            msg_tt = msg_tt..") "
+            msg_tt = msg_tt..")"
           end
-		  if checkbox_or_heals:GetValue() then msg_tt = msg_tt..l["or"].." " end
         end
-        
-		
+
         local msg_hh = ""
         if hh and tonumber(hh) > 0 then
-          msg_hh = hh.." Heal "
+          msg_hh = " "..hh.." Heal "
           if tonumber(hh) > 1 then
-            msg_hh = hh.." Heals "
+            msg_hh = " "..hh.." Heals "
           end
-          
+
           if
             checkbox_heal_diszipriest:GetValue() or
-            checkbox_heal_druid:GetValue() or 
-            checkbox_heal_holypriest:GetValue() or 
-            checkbox_heal_paladin:GetValue() or 
-            checkbox_heal_shaman:GetValue() 
+            checkbox_heal_druid:GetValue() or
+            checkbox_heal_holypriest:GetValue() or
+            checkbox_heal_paladin:GetValue() or
+            checkbox_heal_shaman:GetValue()
           then
             msg_hh = msg_hh.."( "
             if checkbox_heal_diszipriest:GetValue() then msg_hh = msg_hh..short_spec_names["Priest Disziplin"].." " end
             if checkbox_heal_holypriest:GetValue() then msg_hh = msg_hh..short_spec_names["Priest Heilig"].." " end
             if checkbox_heal_druid:GetValue() then msg_hh = msg_hh..short_spec_names["Druid Wiederherst."].." " end
             if checkbox_heal_paladin:GetValue() then msg_hh = msg_hh..short_spec_names["Paladin Heilig"].." " end
-            if checkbox_heal_shaman:GetValue() then msg_hh = msg_hh..short_spec_names["Shaman Wiederherst."].." " end            
-            msg_hh = msg_hh..") "
+            if checkbox_heal_shaman:GetValue() then msg_hh = msg_hh..short_spec_names["Shaman Wiederherst."].." " end
+            msg_hh = msg_hh..")"
           end
-		  if checkbox_or_meles:GetValue() then msg_hh = msg_hh..l["or"].." " end
         end
-		
-        
+
         local msg_mdd = ""
         if mdd and tonumber(mdd) > 0 then
-          msg_mdd = mdd.." Mele "
+          msg_mdd = " "..mdd.." Mele "
           if tonumber(mdd) > 1 then
-            msg_mdd = mdd.." Meles "
+            msg_mdd = " "..mdd.." Meles "
           end
-          
+
           if
             checkbox_mele_awarrior:GetValue() or
             checkbox_mele_bdk:GetValue() or
@@ -3540,19 +3291,17 @@ function AstronaX:CreateRaidSearchGUI()
             if checkbox_mele_paladin:GetValue() then msg_mdd = msg_mdd..short_spec_names["Paladin Vergeltung"].." " end
             if checkbox_mele_shaman:GetValue() then msg_mdd = msg_mdd..short_spec_names["Shaman Verstärk."].." " end
             if checkbox_mele_udk:GetValue() then msg_mdd = msg_mdd..short_spec_names["Deathknight Unheilig"].." " end
-            msg_mdd = msg_mdd..") "
+            msg_mdd = msg_mdd..")"
           end
-		  if checkbox_or_ranges:GetValue() then msg_mdd = msg_mdd..l["or"].." " end
         end
-		
-        
+
         local msg_rdd = ""
         if rdd and tonumber(rdd) > 0 then
-          msg_rdd = rdd.." Range "
+          msg_rdd = " "..rdd.." Range "
           if tonumber(rdd) > 1 then
-            msg_rdd = rdd.." Ranges "
+            msg_rdd = " "..rdd.." Ranges "
           end
-          
+
           if
             checkbox_range_amage:GetValue() or
             checkbox_range_awarlock:GetValue() or
@@ -3580,58 +3329,39 @@ function AstronaX:CreateRaidSearchGUI()
             if checkbox_range_shunter:GetValue() then msg_rdd = msg_rdd..short_spec_names["Hunter Überleben"].." " end
             if checkbox_range_spriest:GetValue() then msg_rdd = msg_rdd..short_spec_names["Priest Schatten"].." " end
             if checkbox_range_xwarlock:GetValue() then msg_rdd = msg_rdd..short_spec_names["Warlock Zerstörung"].." " end
-            msg_rdd = msg_rdd..") "
+            msg_rdd = msg_rdd..")"
           end
         end
-        
+
         local comment = editbox:GetText()
         if comment == nil then
           comment = ""
         end
-        
-        if msg_tt ~= "" or msg_hh ~= "" or msg_mdd ~= "" or msg_rdd ~= "" or comment ~= "" then
+
+        if msg_tt ~= "" or msg_hh ~= "" or msg_mdd ~= "" or msg_rdd ~= "" then
+          local msg = l["For %s we are looking for %s%s%s%s %s"]:format(raid, msg_tt, msg_hh, msg_mdd, msg_rdd, comment)
           local chanList = { GetChannelList() }
-          
+
           for i=1, #chanList, 2 do
             if chanList[i+1] == "World" or chanList[i+1] == "world" then
-              SendChatMessage(l["Searching for %s, %s"]:format(raid, comment), "CHANNEL" ,COMMON ,chanList[i]); 
-			  -- SendChatMessage(l["Searching for %s, %s"]:format(raid, comment), "WHISPER" ,COMMON , player); 
-			  
-			  if msg_tt ~= "" then
-				SendChatMessage(msg_tt, "CHANNEL" ,COMMON ,chanList[i]); 
-				-- SendChatMessage(msg_tt, "WHISPER" ,COMMON , player); 
-			  end
-			  if msg_hh ~= "" then
-				SendChatMessage(msg_hh, "CHANNEL" ,COMMON ,chanList[i]); 
-				-- SendChatMessage(msg_hh, "WHISPER" ,COMMON , player); 
-			  end
-			  if msg_mdd ~= "" then
-				SendChatMessage(msg_mdd, "CHANNEL" ,COMMON ,chanList[i]); 
-				-- SendChatMessage(msg_mdd, "WHISPER" ,COMMON , player); 
-			  end
-			  if msg_rdd ~= "" then
-				SendChatMessage(msg_rdd, "CHANNEL" ,COMMON ,chanList[i]); 
-				-- SendChatMessage(msg_rdd, "WHISPER" ,COMMON , player); 
-			  end
+              SendChatMessage(msg, "CHANNEL" ,COMMON ,chanList[i]);
+              --SendChatMessage(msg, "WHISPER" ,COMMON , player);
             end
           end
         else
           print(red.."Nothing to search")
         end
       end)
-    
+
     frame:AddChild(dropdown_raid)
     frame:AddChild(button)
     frame:AddChild(editbox)
-    
+
     scrollframe:AddChild(slider_tanks)
-    scrollframe:AddChild(checkbox_or_heals)
     scrollframe:AddChild(slider_heals)
-	scrollframe:AddChild(checkbox_or_meles)
     scrollframe:AddChild(slider_meles)
-	scrollframe:AddChild(checkbox_or_ranges)
     scrollframe:AddChild(slider_ranges)
-    
+
     local heading_tanks = AceGUI:Create("InteractiveLabel")
     heading_tanks:SetText("Tanks")
     local heading_heals = AceGUI:Create("InteractiveLabel")
@@ -3640,7 +3370,7 @@ function AstronaX:CreateRaidSearchGUI()
     heading_meles:SetText("Meles")
     local heading_ranges = AceGUI:Create("InteractiveLabel")
     heading_ranges:SetText("Ranges")
-    
+
     scrollframe:AddChild(heading_tanks)
     scrollframe:AddChild(checkbox_tank_druid)
     scrollframe:AddChild(checkbox_tank_dk)
@@ -3653,7 +3383,7 @@ function AstronaX:CreateRaidSearchGUI()
     scrollframe:AddChild(checkbox_heal_holypriest)
     scrollframe:AddChild(checkbox_heal_paladin)
     scrollframe:AddChild(checkbox_heal_shaman)
-    
+
     scrollframe:AddChild(heading_meles)
     scrollframe:AddChild(checkbox_mele_druid)
     scrollframe:AddChild(checkbox_mele_bdk)
@@ -3665,7 +3395,7 @@ function AstronaX:CreateRaidSearchGUI()
     scrollframe:AddChild(checkbox_mele_crogue)
     scrollframe:AddChild(checkbox_mele_awarrior)
     scrollframe:AddChild(checkbox_mele_fwarrior)
-    
+
     scrollframe:AddChild(heading_ranges)
     scrollframe:AddChild(checkbox_range_druid)
     scrollframe:AddChild(checkbox_range_shunter)
@@ -3679,7 +3409,7 @@ function AstronaX:CreateRaidSearchGUI()
     scrollframe:AddChild(checkbox_range_dwarlock)
     scrollframe:AddChild(checkbox_range_awarlock)
     scrollframe:AddChild(checkbox_range_xwarlock)
-    
+
     scrollcontainer = AceGUI:Create("SimpleGroup") -- "InlineGroup" is also good
     scrollcontainer:SetFullWidth(true)
     scrollcontainer:SetFullHeight(true) -- probably?
