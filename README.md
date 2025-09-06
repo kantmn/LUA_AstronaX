@@ -10,7 +10,10 @@ Auto Tracking of Daily Heroics and Weekly Raid Quest as well as Weekly 1KW PvP W
 
 Screenshot Section
 -----------------------------------------------------------------------------------------------------------------------------
-TopBar Requires <a href="https://www.wowinterface.com/downloads/info4571-FuBar3.6.5.html">Fubar Broker Version 3+ (Latest for Wotlk)</a> installed otherwise the information are displayed as button next to your minimap
+TopBar Required <a href="https://www.wowinterface.com/downloads/info4571-FuBar3.6.5.html">Fubar Broker Version 3+ (Latest for Wotlk)</a> installed otherwise the information are displayed as button next to your minimap
+Gearscore is required to run at all <a href="https://addons.rising-gods.de/addons/gearscore">GearScore</a>
+Ace3Lieb is required to run at all <a href="https://www.wowace.com/projects/ace3/files/440275">Ace3Lib</a>
+Download and extract them, then put them also inside the Interface/Addons/ folder
 <img src="https://raw.githubusercontent.com/kantmn/LUA_AstronaX/master/Screenshots/AstronaX_FuBar_Tooltip.png">
 <img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_GUI_Settings_AutoX.png">
 <img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_GUI_Settings_Infos.png">
