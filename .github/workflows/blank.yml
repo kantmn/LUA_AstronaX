@@ -1,0 +1,20 @@
+name: Zip on Ubuntu
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create zip archive
+        uses: nguyenquyhy/zip-release@v0.3.0
+        with:
+          filename: AstronaX_latest.zip
+          path: ./dist
+          workingDirectory: .
+          exclusions: "*.md .git* .zip"
