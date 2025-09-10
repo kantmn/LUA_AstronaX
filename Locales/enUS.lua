@@ -243,4 +243,5 @@ l:RegisterTranslations("enUS", function() return {
    ["herbalism"] = "Find Herbs",
    ["minerals"] = "Find Minerals",
    ["or"] = "or",
+   ["For %s we are looking for %s%s%s%s %s"] = "For %s we are looking for %s%s%s%s %s"
 } end)

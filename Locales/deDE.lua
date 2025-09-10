@@ -245,4 +245,5 @@ l:RegisterTranslations("deDE", function() return {
    ["herbalism"] = "Kräutersuche",
    ["minerals"] = "Mineraliensuche",
    ["or"] = "oder",
+   ["For %s we are looking for %s%s%s%s %s"] = "Für %s suchen wir noch %s%s%s%s %s"
 } end)
