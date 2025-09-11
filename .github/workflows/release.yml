@@ -23,12 +23,13 @@ jobs:
       - name: Create latest.zip
         run: |
           zip -r latest.zip . -x ".git/*" -x "Screenshots/*" -x "*.md" -x ".git*" -x ".git*"
+          ls -l latest.zip  # confirm the file exists
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.DATE_TAG }}
           name: Release ${{ env.DATE_TAG }}
-          files: AstronaX_Latest.zip
+          files: ./latest.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
