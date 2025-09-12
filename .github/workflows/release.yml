@@ -30,7 +30,7 @@ jobs:
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
       actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
     name: Codacy Security Scan
-    runs-on: self-hosted
+    runs-on: ["self-hosted", "arm64"]
     steps:
       # Checkout the repository to the GitHub Actions runner
       - name: Checkout code
@@ -75,9 +75,9 @@ jobs:
           rsync -av --exclude='.git' --exclude='Screenshots' --exclude='*.md' ./ AstronaX/
 
           # Download external addons
-          wget -O ace3.zip https://www.wowace.com/projects/ace3/files/440275/download
-          wget -O gears.zip https://addons.rising-gods.de/addons/gearscore
-
+          wget -O Ace3.zip "https://addons.rising-gods.de/sites/default/files/addons/Ace3-Release-r960.zip"
+          wget -O GearScore.zip "https://addons.rising-gods.de/sites/default/files/addons/GearScore3.1.15%5B1%5D.zip"
+   
           # Unzip addons into AstronaX
           unzip -q ace3.zip -d AstronaX
           unzip -q gears.zip -d AstronaX
