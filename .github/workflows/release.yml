@@ -82,6 +82,7 @@ jobs:
           unzip -q Ace3.zip -d Addons
 
           rm GearScore.zip Ace3.zip
+          rm -rf Addons/AstronaX/Addons
           
       - name: Create zip
         run: |
