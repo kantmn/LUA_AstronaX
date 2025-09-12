@@ -79,9 +79,9 @@ jobs:
           curl -L -o Ace3.zip "https://addons.rising-gods.de/sites/default/files/addons/Ace3-Release-r960.zip"
           
           # Unzip addons into AstronaX
-          unzip -q ace3.zip -d AstronaX
-          unzip -q gears.zip -d AstronaX
-
+          unzip -q GearScore.zip -d AstronaX
+          unzip -q Ace3.zip -d AstronaX
+          
       - name: Prepare astronax zip folder
         run: |
           mkdir AstronaX
