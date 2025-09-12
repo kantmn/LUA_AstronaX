@@ -30,14 +30,29 @@ local last_event_occurance = nil
 local isApplicationOpen = false
 
 
-local addon_color  = "|cff009a1a";
-local addon_warning  = red;
-local addon_highlight  = yellow;
-
 local color_redgrayed = "|cffcc0000"
 local color_greengrayed = "|cff008800"
 local color_blacked = "|cff333333"
 local color_yellowgrayed = "|cff666600"
+
+-- default fallback colors
+local DEFAULT_ADDON_COLOR     = "|cff009a1a" -- green
+local DEFAULT_ADDON_HIGHLIGHT = "|cffffff00" -- yellow
+local DEFAULT_ADDON_WARNING   = "|cffff0000" -- red
+
+-- helpers
+function GetAddonColor()
+    return (AstronaXDB and AstronaXDB.addon_color) or DEFAULT_ADDON_COLOR
+end
+
+function GetAddonHighlight()
+    return (AstronaXDB and AstronaXDB.addon_highlight) or DEFAULT_ADDON_HIGHLIGHT
+end
+
+function GetAddonWarning()
+    return (AstronaXDB and AstronaXDB.addon_warning) or DEFAULT_ADDON_WARNING
+end
+
 
 local reputation_colors = {
 "|cffff0000",   -- 36000  Hated       - Red
@@ -239,6 +254,36 @@ AstronaX.clickableTooltip = true
 AstronaX:RegisterDB("AstronaXDB")
 AstronaX:RegisterDefaults("profile", {})
 
+local defaults = {
+    -- existing defaults...
+
+    -- new defaults
+    ["tooltip_title"] = 0,          -- tooltip title hidden
+    ["farclip_toggle"] = 0,         -- disable farclip changing
+    ["farclip"] = tostring(GetCVarDefault("farclip")), -- keep max client default
+    ["bank_gold_limit"] = 1000,     -- cap for bank deposits
+    ["auto_bank_gold"] = 0,         -- do not auto-exchange gold
+    ["lootmethod_auto"] = 0,        -- do not change loot method based on group size
+}
+local function InitAstronaX()
+    if not AstronaXDB then
+        AstronaXDB = {}
+    end
+    for k,v in pairs(defaults) do
+        if AstronaXDB[k] == nil then
+            AstronaXDB[k] = v
+        end
+    end
+end
+local frame = CreateFrame("Frame")
+frame:RegisterEvent("ADDON_LOADED")
+frame:SetScript("OnEvent", function(_, event, addon)
+    if addon == "AstronaX" then
+        InitAstronaX()
+    end
+end)
+
+
 local options = {
   type = "group",
   name = "AstronaX "..l["Settings"],
@@ -249,16 +294,16 @@ local options = {
       name = l["addon_color"],
       desc = l["addon_color_help"],
       get = function()
-        local r = tonumber(addon_color:sub(5, string.len(addon_color)-4),16) / 255
-        local g = tonumber(addon_color:sub(7, string.len(addon_color)-2),16) / 255
-        local b = tonumber(addon_color:sub(9, string.len(addon_color)),16) / 255
+        local color = GetAddonColor()
+        local r = tonumber(color:sub(5,6),16)/255
+        local g = tonumber(color:sub(7,8),16)/255
+        local b = tonumber(color:sub(9,10),16)/255
         return r,g,b
       end,
       set = function(_,r,g,b)
         if( r ~= 0 and g ~= 0 and b ~= 0) then
           local rgb = {r*255,g*255,b*255};
           AstronaXDB.addon_color = "|cff"..rgb2Hex(rgb)
-          addon_color = AstronaXDB.addon_color
         end;
       end,
     },
@@ -267,16 +312,16 @@ local options = {
       name = l["addon_highlight"],
       desc = l["addon_highlight_help"],
       get = function()
-        local r = tonumber(addon_highlight:sub(5, string.len(addon_highlight)-4),16) / 255
-        local g = tonumber(addon_highlight:sub(7, string.len(addon_highlight)-2),16) / 255
-        local b = tonumber(addon_highlight:sub(9, string.len(addon_highlight)),16) / 255
+        local color = GetAddonHighlight()
+        local r = tonumber(color:sub(5,6),16)/255
+        local g = tonumber(color:sub(7,8),16)/255
+        local b = tonumber(color:sub(9,10),16)/255
         return r,g,b
       end,
       set = function(_,r,g,b)
         if( r ~= 0 and g ~= 0 and b ~= 0) then
           local rgb = {r*255,g*255,b*255};
           AstronaXDB.addon_highlight = "|cff"..rgb2Hex(rgb)
-          addon_highlight = AstronaXDB.addon_highlight
         end;
       end,
     },
@@ -818,60 +863,60 @@ function SlashCmdList.AstronaX(_cmd)
   if(cmd == "aifk") then
     if( parameter ~= nil and string.match(parameter, '%a') and string.len(parameter) >= 2) then
       AstronaXDB.auto_inv_whisper_text = parameter;
-      print(addon_color..l[cmd].." "..l["was %s and was set to %s."]:format(addon_highlight..l["activated"]..addon_color, addon_highlight..parameter..addon_color));
+      print(GetAddonColor()..l[cmd].." "..l["was %s and was set to %s."]:format(GetAddonHighlight()..l["activated"]..GetAddonColor(), GetAddonHighlight()..parameter..GetAddonColor()));
     elseif displayHelp then
-      print(addon_color..l["How to use function %s?"]:format(addon_highlight..l[cmd]..addon_color))
-      print(addon_color..l["Current status is %s and keyword is %s."]:format(addon_highlight..toggleStatusStrings[AstronaXDB[player][cmd]+1]..addon_color, addon_highlight..AstronaXDB.auto_inv_whisper_text..addon_color))
-      print(addon_color.." "..SLASH_AstronaX1.." "..cmd.." "..addon_highlight.."0"..addon_color..spacertab..l["This will disable the function."])
-      print(addon_color.." "..SLASH_AstronaX1.." "..cmd.." "..addon_highlight.."1"..addon_color..spacertab..l["This will enable the function."])
-      print(addon_color.." "..SLASH_AstronaX1.." "..cmd.." "..addon_highlight..l["keyword"]..addon_color..spacertab..l["This will set the invite code to %s."]:format(addon_highlight..l["keyword"]..addon_color))
+      print(GetAddonColor()..l["How to use function %s?"]:format(GetAddonHighlight()..l[cmd]..GetAddonColor()))
+      print(GetAddonColor()..l["Current status is %s and keyword is %s."]:format(GetAddonHighlight()..toggleStatusStrings[AstronaXDB[player][cmd]+1]..GetAddonColor(), GetAddonHighlight()..AstronaXDB.auto_inv_whisper_text..GetAddonColor()))
+      print(GetAddonColor().." "..SLASH_AstronaX1.." "..cmd.." "..GetAddonHighlight().."0"..GetAddonColor()..spacertab..l["This will disable the function."])
+      print(GetAddonColor().." "..SLASH_AstronaX1.." "..cmd.." "..GetAddonHighlight().."1"..GetAddonColor()..spacertab..l["This will enable the function."])
+      print(GetAddonColor().." "..SLASH_AstronaX1.." "..cmd.." "..GetAddonHighlight()..l["keyword"]..GetAddonColor()..spacertab..l["This will set the invite code to %s."]:format(GetAddonHighlight()..l["keyword"]..GetAddonColor()))
     elseif parameterIsDigit then
       AstronaXDB[player][cmd] = parameter
-      print(addon_color..l["The function %s is now %s."]:format(addon_highlight..l[cmd]..addon_color, addon_highlight..toggleStatusStrings[parameter+1]..addon_color));
+      print(GetAddonColor()..l["The function %s is now %s."]:format(GetAddonHighlight()..l[cmd]..GetAddonColor(), GetAddonHighlight()..toggleStatusStrings[parameter+1]..GetAddonColor()));
     else
-      print(addon_color..l["The text for %s is too short, use 3 or more chars."]:format(addon_highlight..l[cmd]..addon_color));
+      print(GetAddonColor()..l["The text for %s is too short, use 3 or more chars."]:format(GetAddonHighlight()..l[cmd]..GetAddonColor()));
     end
   elseif(cmd == "abm" or cmd == "abml") then
     if displayHelp then
-      print(addon_color..l["How to use function %s?"]:format(addon_highlight..l[cmd]..addon_color))
-      print(addon_color..l["Current status is %s and goldlimit set to %s."]:format(addon_highlight..toggleStatusStrings[AstronaXDB[player][cmd]+1]..addon_color, addon_highlight..AstronaXDB[player]["abmv"]..addon_color))
-      print(addon_color.." "..SLASH_AstronaX1.." "..cmd.." "..addon_highlight.."0"..addon_color..spacertab..l["This will disable the function."])
-      print(addon_color.." "..SLASH_AstronaX1.." "..cmd.." "..addon_highlight.."1"..addon_color..spacertab..l["This will enable the function."])
-      print(addon_color.." "..SLASH_AstronaX1.." "..cmd.." "..addon_highlight..l["goldlimit"]..addon_color..spacertab..l["This will set gold ammount to keep on your character."])
+      print(GetAddonColor()..l["How to use function %s?"]:format(GetAddonHighlight()..l[cmd]..GetAddonColor()))
+      print(GetAddonColor()..l["Current status is %s and goldlimit set to %s."]:format(GetAddonHighlight()..toggleStatusStrings[AstronaXDB[player][cmd]+1]..GetAddonColor(), GetAddonHighlight()..AstronaXDB[player]["abmv"]..GetAddonColor()))
+      print(GetAddonColor().." "..SLASH_AstronaX1.." "..cmd.." "..GetAddonHighlight().."0"..GetAddonColor()..spacertab..l["This will disable the function."])
+      print(GetAddonColor().." "..SLASH_AstronaX1.." "..cmd.." "..GetAddonHighlight().."1"..GetAddonColor()..spacertab..l["This will enable the function."])
+      print(GetAddonColor().." "..SLASH_AstronaX1.." "..cmd.." "..GetAddonHighlight()..l["goldlimit"]..GetAddonColor()..spacertab..l["This will set gold ammount to keep on your character."])
     elseif(parameter >= 0) then
       if parameter == 0 or parameter == 1 then
         AstronaXDB[player]["abm"] = parameter
-        print(addon_color..l["The function %s is now %s."]:format(addon_highlight..l[cmd]..addon_color, addon_highlight..toggleStatusStrings[parameter+1]..addon_color));
+        print(GetAddonColor()..l["The function %s is now %s."]:format(GetAddonHighlight()..l[cmd]..GetAddonColor(), GetAddonHighlight()..toggleStatusStrings[parameter+1]..GetAddonColor()));
       elseif parameter > 1 then
         AstronaXDB[player]["abmv"] = parameter;
-        print(addon_color..l[cmd].." "..l["is now %s and goldlimit was set to %s."]:format(addon_highlight..l["activated"]..addon_color, addon_highlight..parameter..addon_color));
+        print(GetAddonColor()..l[cmd].." "..l["is now %s and goldlimit was set to %s."]:format(GetAddonHighlight()..l["activated"]..GetAddonColor(), GetAddonHighlight()..parameter..GetAddonColor()));
       end
     else
-      print(addon_color..l[cmd].." "..l["Paramter invalid, use 0 or 1 to change state, or higher number to set Goldlimit."])
+      print(GetAddonColor()..l[cmd].." "..l["Paramter invalid, use 0 or 1 to change state, or higher number to set Goldlimit."])
     end
   elseif isValueInsideArray(function_array, cmd) then
     displayHelpForFunction(cmd, parameter)
   else
-    print(addon_highlight..l["Displaying features with out commands:"])
-    print(addon_color.."Auto Track Character Stats")
-    print(addon_color.." - Class")
-    print(addon_color.." - Emlems")
-    print(addon_color.." - Gearscore")
-    print(addon_color.." - Gold")
-    print(addon_color.." - Honor")
-    print(addon_color.." - WotLK RaidIDs")
-    print(addon_color.." - TalentSpecs")
-    print(addon_color.." - Apply for Raids or Search for a Raid GUI")
-    print(addon_color.."Alt Trading Items -> based on DayTrader")
-    print(addon_color.."Fixing Combatlog once it breaks")
-    print(addon_color.."Check Daily HC Status")
-    print(addon_color.."Check Weekly PVP Quest")
-    print(addon_color.."Check Weekly Raid Status")
-    print(addon_color.."Click on FuBar or Minimap button to toggle Addon settings")
+    print(GetAddonHighlight()..l["Displaying features with out commands:"])
+    print(GetAddonColor().."Auto Track Character Stats")
+    print(GetAddonColor().." - Class")
+    print(GetAddonColor().." - Emlems")
+    print(GetAddonColor().." - Gearscore")
+    print(GetAddonColor().." - Gold")
+    print(GetAddonColor().." - Honor")
+    print(GetAddonColor().." - WotLK RaidIDs")
+    print(GetAddonColor().." - TalentSpecs")
+    print(GetAddonColor().." - Apply for Raids or Search for a Raid GUI")
+    print(GetAddonColor().."Alt Trading Items -> based on DayTrader")
+    print(GetAddonColor().."Fixing Combatlog once it breaks")
+    print(GetAddonColor().."Check Daily HC Status")
+    print(GetAddonColor().."Check Weekly PVP Quest")
+    print(GetAddonColor().."Check Weekly Raid Status")
+    print(GetAddonColor().."Click on FuBar or Minimap button to toggle Addon settings")
     print(addon_warning.."---------------------------------------------")
-    print(addon_highlight..l["Displaying available commands:"])
+    print(GetAddonHighlight()..l["Displaying available commands:"])
     for k in pairs(function_array) do
-      print(addon_color.." /ax "..addon_highlight..function_array[k]..addon_color..spacertab..l[function_array[k]])
+      print(GetAddonColor().." /ax "..GetAddonHighlight()..function_array[k]..GetAddonColor()..spacertab..l[function_array[k]])
     end
     print(addon_warning.."---------------------------------------------")
   end
@@ -881,16 +926,16 @@ function displayHelpForFunction(cmd, parameter)
   local helptext = l[cmd.."_help"]
   if ( parameter == 0 or parameter == 1 )  then
     AstronaXDB[player][cmd] = parameter
-    print(addon_color..l["The function %s is now %s."]:format(addon_highlight..l[cmd]..addon_color, addon_highlight..toggleStatusStrings[parameter+1]..addon_color));
+    print(GetAddonColor()..l["The function %s is now %s."]:format(GetAddonHighlight()..l[cmd]..GetAddonColor(), GetAddonHighlight()..toggleStatusStrings[parameter+1]..GetAddonColor()));
     AstronaX:OnTextUpdate()
   else
-    print(addon_color..l["How to use function %s?"]:format(addon_highlight..l[cmd]..addon_color))
-    print(addon_color..l["Current status is %s."]:format(addon_highlight..toggleStatusStrings[AstronaXDB[player][cmd]+1]..addon_color))
+    print(GetAddonColor()..l["How to use function %s?"]:format(GetAddonHighlight()..l[cmd]..GetAddonColor()))
+    print(GetAddonColor()..l["Current status is %s."]:format(GetAddonHighlight()..toggleStatusStrings[AstronaXDB[player][cmd]+1]..GetAddonColor()))
     if helptext and string.len(helptext) >= 2 then
-      print(addon_color..helptext)
+      print(GetAddonColor()..helptext)
     end
-    print(addon_color.." "..SLASH_AstronaX1.." "..cmd.." "..addon_highlight.."0"..addon_color..spacertab..l["This will disable the function."])
-    print(addon_color.." "..SLASH_AstronaX1.." "..cmd.." "..addon_highlight.."1"..addon_color..spacertab..l["This will enable the function."])
+    print(GetAddonColor().." "..SLASH_AstronaX1.." "..cmd.." "..GetAddonHighlight().."0"..GetAddonColor()..spacertab..l["This will disable the function."])
+    print(GetAddonColor().." "..SLASH_AstronaX1.." "..cmd.." "..GetAddonHighlight().."1"..GetAddonColor()..spacertab..l["This will enable the function."])
   end
 end
 
@@ -1009,13 +1054,13 @@ function AstronaX:ADDON_LOADED()
 
     if(not AstronaXDB) then
       AstronaXDB = {}
-      print(addon_highlight..l["This is the first start up of AstronaX. Thank you for installing."])
+      print(GetAddonHighlight()..l["This is the first start up of AstronaX. Thank you for installing."])
     end
     if(not AstronaXDB[player] ) then
       AstronaXDB[player] = {}
-      print(addon_highlight..l["This is the first use of AstronaX on this character. Database has been initialized."])
-      print(addon_color..l["Please use %s or %s to display the help, you can enable or disable features as you like."]:format(addon_highlight..SLASH_AstronaX1..addon_color, addon_highlight..SLASH_AstronaX2..addon_color))
-      print(addon_color..l["You can also use our GUI to change settings, just go to ESC -> Interface -> Addons -> AstronaX."])
+      print(GetAddonHighlight()..l["This is the first use of AstronaX on this character. Database has been initialized."])
+      print(GetAddonColor()..l["Please use %s or %s to display the help, you can enable or disable features as you like."]:format(GetAddonHighlight()..SLASH_AstronaX1..GetAddonColor(), GetAddonHighlight()..SLASH_AstronaX2..GetAddonColor()))
+      print(GetAddonColor()..l["You can also use our GUI to change settings, just go to ESC -> Interface -> Addons -> AstronaX."])
 
       AstronaXDB[player]["abmv"] = 1000 --"gold auto balance money amount
       AstronaXDB[player]["abm"] = 0 --"gold auto balance money
@@ -1025,8 +1070,6 @@ function AstronaX:ADDON_LOADED()
       AstronaXDB[player]["farclip_toggle"] = 0 --auto loot method
 
       AstronaXDB.auto_inv_whisper_text = "ainv";
-      AstronaXDB.addon_color = green;
-      AstronaXDB.addon_highlight = yellow;
     end
 
     for k in pairs(function_array) do
@@ -1043,8 +1086,6 @@ function AstronaX:ADDON_LOADED()
 	    SetCVar( "farclip", 4000)
 	  end
     end
-    addon_color = AstronaXDB.addon_color
-    addon_highlight = AstronaXDB.addon_highlight
 end
 
 function AstronaX:ACTIVE_TALENT_GROUP_CHANGED()
@@ -1172,7 +1213,7 @@ end
 function AstronaX:PARTY_LOOT_METHOD_CHANGED()
   if AstronaXDB[player]["tlmc"] == 1 then
     PlaySoundFileAstronax("Sound\\Interface\\Glyph_MajorCreate.wav");	-- IGNORES VOLUME
-    print(addon_color..l["Loot Method changed to %s."]:format(addon_highlight..GetLootType()..addon_color))
+    print(GetAddonColor()..l["Loot Method changed to %s."]:format(GetAddonHighlight()..GetLootType()..GetAddonColor()))
   end
   self:OnTextUpdate()
 end
@@ -1365,7 +1406,7 @@ end
 function AstronaX:AcceptChatInvites(msg, target)
   if (string.match(msg, '%d.%dk') or string.match(msg, '%d%d%d%dgs') or msg == "+" or msg == "inv") and target ~= player then  -- matched 5.5k z.b.
     pending_inviter = target
-    print(addon_color..l["Chat Partner %s is a possible inviter, AutoInvite will accept invites."]:format(addon_highlight..target..addon_color))
+    print(GetAddonColor()..l["Chat Partner %s is a possible inviter, AutoInvite will accept invites."]:format(GetAddonHighlight()..target..GetAddonColor()))
   elseif target ~= pending_inviter then
     pending_inviter = nil
   end
@@ -1427,7 +1468,7 @@ function AstronaX:AutoRepair()
       elseif money > RepairCost then
         method = 1
       else
-        print(addon_color..l["You neither have enough gold in your poket nor offers your guildbank enough to pay your repair costs."])
+        print(GetAddonColor()..l["You neither have enough gold in your poket nor offers your guildbank enough to pay your repair costs."])
       end
     end
 
@@ -1440,7 +1481,7 @@ function AstronaX:AutoRepair()
       PlaySoundFileAstronax("Sound\\Spells\\ArmorKitBuffSound.wav");
       PlaySoundFileAstronax("Sound\\Interface\\LootCoinSmall.wav");
       RepairAllItems(payByGuild)
-      print(addon_color..l["Repaircosts about %s have been payed %s."]:format(format_money(cost, true, true, true)..addon_color, addon_highlight..payedByWho[method]..addon_color));
+      print(GetAddonColor()..l["Repaircosts about %s have been payed %s."]:format(format_money(cost, true, true, true)..GetAddonColor(), GetAddonHighlight()..payedByWho[method]..GetAddonColor()));
     end
   end
 end
@@ -1522,14 +1563,14 @@ function AstronaX:AutoRollOnLoot(rollID)
   end
   local quality_color = select(4, GetItemQualityColor(quality))
   --local itemLink, itemRarity, itemLevel, itemMinLevel, itemType = GetItemInfo(name)
-  print(addon_color..l["Roll for"].." "..quality_color.."["..name.."]".." "..red..rollTypeStrings[rollType]..addon_color..addon_color..".")
+  print(GetAddonColor()..l["Roll for"].." "..quality_color.."["..name.."]".." "..red..rollTypeStrings[rollType]..GetAddonColor()..GetAddonColor()..".")
 end
 
 function AstronaX:AutoSellJunk()
 	local soldItems = 0;
 	local sellPrice = 0;
 
-  --print(addon_color..l["Selling Junk and unwanted items"])
+  --print(GetAddonColor()..l["Selling Junk and unwanted items"])
 	for bag=0,4 do
 		for slot=0,GetContainerNumSlots(bag) do
 			local itemLink = GetContainerItemLink(bag, slot)
@@ -1545,7 +1586,7 @@ function AstronaX:AutoSellJunk()
 				isValueInsideArray(sellJunkList, itemId) or
 				itemLink and select(3, GetItemInfo(itemLink)) == 0
 			then
-				print(addon_color..itemCount.."x "..itemLink) --..orange" Debug (ID:"..itemId.." Quality:"..itemQuality..")")
+				print(GetAddonColor()..itemCount.."x "..itemLink) --..orange" Debug (ID:"..itemId.." Quality:"..itemQuality..")")
 				sellPrice = sellPrice + (select(11, GetItemInfo(itemLink)) * GetItemCount(itemLink));
 				soldItems = soldItems +1;
 
@@ -1558,7 +1599,7 @@ function AstronaX:AutoSellJunk()
   if soldItems > 0 then
     PlaySoundFileAstronax("Sound\\Interface\\LootCoinSmall.wav");
     if sellPrice > 0 then
-      print(addon_color..soldItems.." "..addon_highlight..l["stack(s)%s sold for %s."]:format(addon_color, format_money(sellPrice, true, true, true)..addon_color));
+      print(GetAddonColor()..soldItems.." "..GetAddonHighlight()..l["stack(s)%s sold for %s."]:format(GetAddonColor(), format_money(sellPrice, true, true, true)..GetAddonColor()));
     end
   end
 end
@@ -1571,7 +1612,7 @@ function AstronaX:AutoSetTracking()
         if active then  -- geht iwie nicht mit active == false
         else
           SetTracking(i,true);
-          print(addon_color..l["AutoTracking set to %s."]:format(addon_highlight..name..addon_color))
+          print(GetAddonColor()..l["AutoTracking set to %s."]:format(GetAddonHighlight()..name..GetAddonColor()))
           break
         end
       end
@@ -1621,7 +1662,7 @@ function AstronaX:CheckInviteRequest(unit, inviting)
     SendChatMessage(l["AutoInvite declined, i am no group leader and do not have invite permissions."],"WHISPER" ,COMMON ,unit);
     return
   elseif pending_inviter and pending_inviter == unit then
-    print(addon_color..l["AutoInvite accepted."])
+    print(GetAddonColor()..l["AutoInvite accepted."])
     if inviting == true and (not isInGroup(player) or IsLeadOrAssist() )  then
       -- wir laden ein weil jemand inviter gesetzt hat?
       InviteUnit(pending_inviter);
@@ -1699,7 +1740,7 @@ function AstronaX:GetAttachment(mailIndex, sender)
 	local itemname, _, itemcount = GetInboxItem(mailIndex, itemIndex);
 	if ( itemname and itemcount ) then
 		if sender == nil then sender = "Unknown" end
-		print(addon_highlight.." "..mailIndex..addon_color..". "..l["Mail from %s contains %sx %s."]:format(white..sender..addon_color,addon_highlight..itemcount, GetInboxItemLink(mailIndex, itemname)));
+		print(GetAddonHighlight().." "..mailIndex..GetAddonColor()..". "..l["Mail from %s contains %sx %s."]:format(white..sender..GetAddonColor(),GetAddonHighlight()..itemcount, GetInboxItemLink(mailIndex, itemname)));
 	end
 	TakeInboxItem(mailIndex, itemIndex);
 end
@@ -1769,11 +1810,11 @@ function AstronaX:GetGroupStats()
     end
 
     local Mcolor = red;
-    if total_mana_percentage > 70 then Mcolor = addon_color
+    if total_mana_percentage > 70 then Mcolor = GetAddonColor()
     elseif total_mana_percentage > 35 then Mcolor = orange; end
 
     local Hcolor = red;
-    if total_health_percentage > 70 then Hcolor = addon_color
+    if total_health_percentage > 70 then Hcolor = GetAddonColor()
     elseif total_health_percentage > 35 then Hcolor = orange; end
 
     if (total_health_percentage or total_health_percentage) ~= 100 then
@@ -1844,11 +1885,11 @@ function AstronaX:GetMail()
             local _, itemName, playerName, _, _, _, _ = GetInboxInvoiceInfo(mailCount);
 
             if playerName ~= nil then
-              print(addon_highlight.." "..mailCount..addon_color..". "..l["Mail contains %s from %s for %s."]:format(format_money(money, true, true, true)..addon_color,addon_highlight..playerName..addon_color, white..itemName));
+              print(GetAddonHighlight().." "..mailCount..GetAddonColor()..". "..l["Mail contains %s from %s for %s."]:format(format_money(money, true, true, true)..GetAddonColor(),GetAddonHighlight()..playerName..GetAddonColor(), white..itemName));
             end
 
 					else
-            print(addon_highlight.." "..mailCount..addon_color..". "..l["Mail by %s regarding %s contains %s."]:format(addon_highlight..sender..addon_color, white..subject, format_money(money, true, true, true)..addon_color));
+            print(GetAddonHighlight().." "..mailCount..GetAddonColor()..". "..l["Mail by %s regarding %s contains %s."]:format(GetAddonHighlight()..sender..GetAddonColor(), white..subject, format_money(money, true, true, true)..GetAddonColor()));
 					end
 					TakeInboxMoney(mailCount);
 					PlaySoundFileAstronax("Sound\\Interface\\LootCoinSmall.wav");
@@ -1878,7 +1919,7 @@ function AstronaX:GetPlayerXPStatus(unit)
 
     if xp_max > 0 and xp_count > 0 then
       local xp_percent = round(xp_count/xp_max)
-      local text = addon_color..l["ExperienceStatus: "]
+      local text = GetAddonColor()..l["ExperienceStatus: "]
       --text = text..red..round(xp_old/xp_max).."% "
       if xp_percent == 0 then
         text = text..yellow.."+ "..purple..xp_count.." XP"..yellow.." ( |cffA330C9< 0%"..yellow..") "
@@ -2048,7 +2089,7 @@ end
 
 function AstronaX:AnnounceRaidSearch(author,color,raid, minIlvl)
   PlaySoundFileAstronax("Sound\\Interface\\MagicClick.wav")
-  print(addon_color.."RaidWatch: "..addon_highlight..author..green.." is looking for "..color..raid..green)
+  print(GetAddonColor().."RaidWatch: "..GetAddonHighlight()..author..green.." is looking for "..color..raid..green)
 end
 
 function AstronaX:CheckRaidIDandRelevance(author, msgFound, ilvl_minimum, msgColor, raidPattern, raidName, msgInform)
@@ -2112,7 +2153,7 @@ function AstronaX:UpdateLootMethod()
     if UnitLevel("target") == -1 and GetLootMethod() ~= "master" and GetGroupCount() > 10 then
         if IsLead() then
           SetLootMethod("master", player);
-          print(addon_color..l["Loot Method changed to %s."]:format(addon_highlight.."Pluendermeister"..addon_color))
+          print(GetAddonColor()..l["Loot Method changed to %s."]:format(GetAddonHighlight().."Pluendermeister"..GetAddonColor()))
         end
       --lootmethod
       --"roundrobin"    Round-robin, looting cycles evenly through group members.
@@ -2121,12 +2162,12 @@ function AstronaX:UpdateLootMethod()
       --"master"    Master looter, designated player distributes loot.
       --"personalloot"  Personal loot, any loot acquired is placed directly in bags.
     elseif UnitLevel("target") == -1 or UnitLevel("target") == nil then
-        --print(addon_color.."Loot Methode nicht geaendert weil im Kampf")
+        --print(GetAddonColor().."Loot Methode nicht geaendert weil im Kampf")
     elseif isInCombat() then
       if GetLootMethod() ~= "group" and GetLootMethod() ~= "needbeforegreed"  then
         if IsLead() then
           SetLootMethod("needbeforegreed", 2);
-          print(addon_color..l["Loot Method changed to %s."]:format(addon_highlight.."Need4Greed"..addon_color))
+          print(GetAddonColor()..l["Loot Method changed to %s."]:format(GetAddonHighlight().."Need4Greed"..GetAddonColor()))
         end
         --threshold
         --0 - Poor
@@ -2147,7 +2188,7 @@ function AstronaX:UpdateMoney()
   local withdraw = (100 * 100 * AstronaXDB[player]["abmv"] ) - current_money;
 
   if deposit > 100 * 100 * 100  and AstronaXDB[player]["abm"] == 1 then
-    print(addon_color..l["Deployed %s to our guildbank."]:format(format_money(deposit, true, true, true)..addon_color));
+    print(GetAddonColor()..l["Deployed %s to our guildbank."]:format(format_money(deposit, true, true, true)..GetAddonColor()));
     DepositGuildBankMoney(deposit);
     PlaySoundFileAstronax("Sound\\Interface\\LootCoinSmall.wav");
   end
@@ -2155,7 +2196,7 @@ function AstronaX:UpdateMoney()
   if withdraw > 100 * 100 * 100 and AstronaXDB[player]["abml"] == 1 then
     if CanWithdrawGuildBankMoney() then
       if( withdraw <= GetGuildBankMoney() ) then
-        print(addon_color..l["Took %s from our guildbank."]:format(format_money(withdraw, true, true, true)..addon_color));
+        print(GetAddonColor()..l["Took %s from our guildbank."]:format(format_money(withdraw, true, true, true)..GetAddonColor()));
         WithdrawGuildBankMoney(withdraw);
         PlaySoundFileAstronax("Sound\\Interface\\LootCoinSmall.wav");
       else
@@ -2338,7 +2379,7 @@ function AstronaX:OnTextUpdate()
       last_sound_played["1kw"] = GetTime();
       PlaySoundFileAstronax("Sound\\Spells\\PVPWarning"..UnitFactionGroup("player")..".wav");
       UIErrorsFrame:AddMessage(l["Battle"].." in 1k Winter", 1.0, 0.1, 0.1, 53, 4);
-      print(red..l["Battle"]..addon_highlight.." in 1k Winter.")
+      print(red..l["Battle"]..GetAddonHighlight().." in 1k Winter.")
     end
   else
     local thousend_winter = ""
@@ -2507,11 +2548,10 @@ function AstronaX:OnTooltipUpdate()
     if AstronaXDB[player]["tooltip_chardetails"] == 1 then
       local total_money = 0
       for i in pairs(sorted_table) do
-        local _, v = sorted_table[i], AstronaXDB[ sorted_table[i] ]
-
-        if v["money"] ~= nil and v["money"] > 0 then
-          total_money = total_money + v["money"]
-        end
+          local v = AstronaXDB[sorted_table[i]]
+          if type(v) == "table" and v.money and v.money > 0 then
+              total_money = total_money + v.money
+          end
       end
 
       local headers = {}
@@ -2535,6 +2575,7 @@ function AstronaX:OnTooltipUpdate()
         local _, v = sorted_table[i], AstronaXDB[ sorted_table[i] ]
 
         if (
+          type(v) == "table" and
           (v["talentspec_primary"] or v["talentspec_secondary"]) and
           v["class"] and
           v["gearscore"] and
@@ -2636,6 +2677,7 @@ function AstronaX:OnTooltipUpdate()
       for i, db_player in pairs(sorted_table) do
         local _, v = sorted_table[i], AstronaXDB[ sorted_table[i] ]
         if (
+          type(v) == "table" and
           (v["talentspec_primary"] or v["talentspec_secondary"]) and
           v["class"] and
           v["ilvl"] and
