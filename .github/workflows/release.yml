@@ -68,9 +68,29 @@ jobs:
           DATE_TAG=$(date +'%Y.%m.%d_%H%M%S')
           echo "DATE_TAG=$DATE_TAG" >> $GITHUB_ENV
 
-      - name: Create latest.zip
+      - name: Prepare external libraries
         run: |
-          zip -r AstronaX.zip . -x ".git/*" -x "Screenshots/*" -x "*.md" -x ".git*" -x ".git*"
+          mkdir AstronaX
+          # Copy main project files
+          rsync -av --exclude='.git' --exclude='Screenshots' --exclude='*.md' ./ AstronaX/
+
+          # Download external addons
+          wget -O ace3.zip https://www.wowace.com/projects/ace3/files/440275/download
+          wget -O gears.zip https://addons.rising-gods.de/addons/gearscore
+
+          # Unzip addons into AstronaX
+          unzip -q ace3.zip -d AstronaX
+          unzip -q gears.zip -d AstronaX
+
+      - name: Prepare astronax zip folder
+        run: |
+          mkdir AstronaX
+          # Copy all content except unwanted files
+          rsync -av --exclude='.git' --exclude='Screenshots' --exclude='*.md' ./ AstronaX/
+
+      - name: Create zip
+        run: |
+          zip -r AstronaX.zip AstronaX
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
