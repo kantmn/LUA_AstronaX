@@ -10,7 +10,7 @@ on:
 
 jobs:
   release:
-    runs-on: self-hosted
+    runs-on: ["self-hosted", "arm64"]
     steps:
       - uses: actions/checkout@v4
 
@@ -29,6 +29,15 @@ jobs:
         with:
           tag_name: ${{ env.DATE_TAG }}
           name: Release ${{ env.DATE_TAG }}
+          files: ./AstronaX.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub latest Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest Release from ${{ env.DATE_TAG }}
           files: ./AstronaX.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
