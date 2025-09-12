@@ -75,9 +75,9 @@ jobs:
           rsync -av --exclude='.git' --exclude='Screenshots' --exclude='*.md' ./ AstronaX/
 
           # Download external addons
-          wget -O Ace3.zip "https://addons.rising-gods.de/sites/default/files/addons/Ace3-Release-r960.zip"
-          wget -O GearScore.zip "https://addons.rising-gods.de/sites/default/files/addons/GearScore3.1.15%5B1%5D.zip"
-   
+          curl -L -o GearScore.zip "https://addons.rising-gods.de/sites/default/files/addons/GearScore3.1.15%5B1%5D.zip"
+          curl -L -o Ace3.zip "https://addons.rising-gods.de/sites/default/files/addons/Ace3-Release-r960.zip"
+          
           # Unzip addons into AstronaX
           unzip -q ace3.zip -d AstronaX
           unzip -q gears.zip -d AstronaX
