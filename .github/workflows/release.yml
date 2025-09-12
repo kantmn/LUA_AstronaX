@@ -84,7 +84,6 @@ jobs:
           
       - name: Prepare astronax zip folder
         run: |
-          mkdir AstronaX
           # Copy all content except unwanted files
           rsync -av --exclude='.git' --exclude='Screenshots' --exclude='*.md' ./ AstronaX/
 
