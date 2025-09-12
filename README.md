@@ -1,10 +1,9 @@
-[![Security Scan](https://github.com/kantmn/anker-solix-api/actions/workflows/codacy.yml/badge.svg)](https://github.com/kantmn/anker-solix-api/actions/workflows/codacy.yml)
-[![CodeQL](https://github.com/kantmn/anker-solix-api/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/kantmn/anker-solix-api/actions/workflows/github-code-scanning/codeql)
-[![Release building](https://github.com/kantmn/anker-solix-api/actions/workflows/release.yml/badge.svg)](https://github.com/kantmn/anker-solix-api/actions/workflows/release.yml)
+[![Security Scan and Release](https://github.com/kantmn/anker-solix-api/actions/workflows/release.yml/badge.svg)](https://github.com/kantmn/anker-solix-api/actions/workflows/release.yml)
+[![Code Scanning](https://github.com/kantmn/anker-solix-api/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/kantmn/anker-solix-api/actions/workflows/github-code-scanning/codeql)
 
 AstronaX is a World of Warcraft Addon for Version 3.3.5a aka Wrath of the Lichking. This is the current development Repository.
 
-<a href="https://github.com/kantmn/LUA_AstronaX/releases/download/latest/AstronaX.zip">Download the latest Version here</a>
+<a href="https://github.com/kantmn/LUA_AstronaX/releases">Download the latest Version here</a>
 
 Here are some of the features AstronaX currently contains
 Auto Track Character Stats + Class + Emblems + Gold + Honor + RaidIDs + TalentSpecs")
