@@ -68,9 +68,10 @@ jobs:
           DATE_TAG=$(date +'%Y.%m.%d_%H%M%S')
           echo "DATE_TAG=$DATE_TAG" >> $GITHUB_ENV
 
-      - name: Prepare external libraries
+      - name: Prepare files
         run: |
           mkdir -p Addons/AstronaX
+          rsync -av --exclude='.git' --exclude='Screenshots' --exclude='*.md' ./ Addons/AstronaX/
 
           # Download external addons
           curl -L -o GearScore.zip "https://addons.rising-gods.de/sites/default/files/addons/GearScore3.1.15%5B1%5D.zip"
@@ -82,14 +83,9 @@ jobs:
 
           rm GearScore.zip Ace3.zip
           
-      - name: Prepare astronax zip folder
-        run: |
-          # Copy all content except unwanted files
-          rsync -av --exclude='.git' --exclude='Screenshots' --exclude='*.md' ./ Addons/AstronaX/
-
       - name: Create zip
         run: |
-          zip -r AstronaX.zip AstronaX
+          zip -r AstronaX.zip Addons
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
