@@ -29,7 +29,6 @@ local sound_played_counter = 1
 local last_event_occurance = nil
 local isApplicationOpen = false
 
-
 local color_redgrayed = "|cffcc0000"
 local color_greengrayed = "|cff008800"
 local color_blacked = "|cff333333"
@@ -173,6 +172,98 @@ local spec_icons = ({
     ["Warrior Furor"] = "Interface\\Icons\\Ability_Warrior_InnerRage.blp",
     ["Warrior Schutz"] = "Interface\\Icons\\ability_warrior_defensivestance.blp",
 })
+
+local ProfessionsIDToIcon = {
+    [51304] = "Interface\\Icons\\trade_alchemy",         -- Alchemy
+    [50309] = "Interface\\Icons\\trade_mining",           -- Mining
+    [51306] = "Interface\\Icons\\trade_engineering",          -- Engineering
+    [45363] = "Interface\\Icons\\inv_inscription_tradeskill01",   -- Inscription
+    [51307] = "Interface\\Icons\\inv_misc_gem_02",  -- Jewelcrafting
+    [50300] = "Interface\\Icons\\spell_nature_naturetouchgrow", -- Herbalism
+    [50305] = "Interface\\Icons\\inv_misc_pelt_wolf_01",          -- Skinning
+    [50308] = "Interface\\Icons\\inv_misc_armorkit_17", -- Leatherworking
+    [51300] = "Interface\\Icons\\trade_blacksmithing",         -- Blacksmithing
+    [51309] = "Interface\\Icons\\trade_tailoring",      -- Tailoring
+    [51313] = "Interface\\Icons\\trade_engraving", -- Enchanting
+    -- [51294] = "Interface\\Icons\\inv_fishingpole_02",   -- Fishing
+    -- [51295] = "Interface\\Icons\\spell_holy_sealofsacrifice", -- First Aid
+    -- [51296] = "Interface\\Icons\\inv_misc_food_15",      -- Cooking
+}
+local ProfessionsNamesToID = {
+    -- Alchemy
+    ["Alchemie"] = 51304,
+    ["Alchemy"] = 51304,
+    ["Alquimia"] = 51304,
+    ["Алхимия"] = 51304,
+    -- Mining
+    ["Bergbau"] = 50309,
+    ["Mining"] = 50309,
+    ["Consistencia"] = 50309,
+    ["Горное дело"] = 50309,
+    -- Engineering
+    ["Ingenieurskunst"] = 51306,
+    ["Engineering"] = 51306,
+    ["Ingeniería"] = 51306,
+    ["Инженерное дело"] = 51306,
+    -- Inscription
+    ["Inschriftenkunde"] = 45363,
+    ["Inscription"] = 45363,
+    ["Inscripción"] = 45363,
+    ["Начертание"] = 45363,
+    -- Jewelcrafting
+    ["Jewelcrafting"] = 51307,
+    ["Juwelenschleifen"] = 51307,
+    ["Joyería"] = 51307,
+    ["Ювелирное дело"] = 51307,
+    -- Herbalism
+    ["Herbalism"] = 50300,
+    ["Kräuterkunde"] = 50300,
+    ["Herboristería"] = 50300,
+    ["Травничество"] = 50300,
+    -- Skinning
+    ["Kürschnerei"] = 50305,
+    ["Skinning"] = 50305,
+    ["Desuello"] = 50305,
+    ["Снятие шкур"] = 50305,
+    -- Leatherworking
+    ["Lederverarbeitung"] = 50308,
+    ["Leatherworking"] = 50308,
+    ["Peletería"] = 50308,
+    ["Кожевничество"] = 50308,
+    -- Blacksmithing
+    ["Blacksmithing"] = 51300,
+    ["Schmiedekunst"] = 51300,
+    ["Herrería"] = 51300,
+    ["Кузнечное дело"] = 51300,
+    -- Tailoring
+    ["Schneiderei"] = 51309,
+    ["Tailoring"] = 51309,
+    ["Sastrería"] = 51309,
+    ["Портняжное дело"] = 51309,
+    -- Enchanting
+    ["Verzauberkunst"] = 51313,
+    ["Enchanting"] = 51313,
+    ["Encantamiento"] = 51313,
+    ["Наложение чар"] = 51313,
+
+    -- -- Cooking
+    -- ["Cooking"] = 51296,
+    -- ["Kochkunst"] = 51296,
+    -- ["Cocina"] = 51296,
+    -- ["Кулинария"] = 51296,
+    -- -- First Aid
+    -- ["Erste Hilfe"] = 51295,
+    -- ["First Aid"] = 51295,
+    -- ["Primeros auxilios"] = 51295,
+    -- ["Первая помощь"] = 51295,
+    -- Fishing
+    -- ["Angeln"] = 51294,
+    -- ["Fishing"] = 51294,
+    -- ["Pesca"] = 51294,
+    -- ["Рыбная ловля"] = 51294,
+}
+
+
 
 local function_array = {
   "bar_timer_1kw",
@@ -974,6 +1065,7 @@ function AstronaX:OnEnable()
 	self:RegisterEvent("PLAYER_TALENT_UPDATE")
 	self:RegisterEvent("PLAYER_UNGHOST")
   self:RegisterEvent("PLAYER_XP_UPDATE")
+  self:RegisterEvent("SKILL_LINES_CHANGED")
 	self:RegisterEvent("QUEST_TURNED_IN")
 	self:RegisterEvent("QUEST_QUERY_COMPLETE")
 	self:RegisterEvent("RAID_INSTANCE_WELCOME")
@@ -1010,7 +1102,7 @@ function AstronaX:OnEnable()
   if(not AstronaXDB[player][selectionIds[6]] ) then
       AstronaXDB[player][selectionIds[6]] = 0
   end
-      
+
   if(not AstronaXDB[player]["talentspec_primary"] ) then
       AstronaXDB[player]["talentspec_primary"] = "none"
   end
@@ -1199,6 +1291,47 @@ function AstronaX:MERCHANT_SHOW()
     end
 end
 
+function AstronaX:CheckProfessions()
+  for i=1,GetNumSkillLines() do
+      local name, _, _, rank, _, _, maxRank = GetSkillLineInfo(i)
+      local message = ""
+      if rank > 1 then
+          -- check if profession is in our list
+          if ProfessionsNamesToID[name] then
+              -- new profession 
+              if not AstronaXDB[player]["profession_1_id"] and AstronaXDB[player]["profession_2_id"] ~= ProfessionsNamesToID[name] then
+                AstronaXDB[player]["profession_1_id"] = ProfessionsNamesToID[name]
+                AstronaXDB[player]["profession_1_rank"] = rank
+                AstronaXDB[player]["profession_1_max"] = maxRank
+              end
+              if not AstronaXDB[player]["profession_2_id"] and AstronaXDB[player]["profession_1_id"] ~= ProfessionsNamesToID[name] then
+                AstronaXDB[player]["profession_2_id"] = ProfessionsNamesToID[name]
+                AstronaXDB[player]["profession_2_rank"] = rank
+                AstronaXDB[player]["profession_2_max"] = maxRank
+              end
+
+              -- profession rank update
+              if AstronaXDB[player]["profession_1_rank"] ~= rank and AstronaXDB[player]["profession_1_id"] == ProfessionsNamesToID[name] then
+                AstronaXDB[player]["profession_1_rank"] = rank
+                AstronaXDB[player]["profession_1_max"] = maxRank
+                playerProfId = AstronaXDB[player]["profession_1_id"]
+                playerProfIcon = ProfessionsIDToIcon[AstronaXDB[player]["profession_1_id"]]
+                message = "Profession1 Rank "..playerProfId.." Name: "..name.."("..rank.."/"..maxRank..")"
+              end
+
+              if AstronaXDB[player]["profession_2_rank"] ~= rank and AstronaXDB[player]["profession_2_id"] == ProfessionsNamesToID[name] then
+                AstronaXDB[player]["profession_2_rank"] = rank
+                AstronaXDB[player]["profession_2_max"] = maxRank
+                playerProfId = AstronaXDB[player]["profession_2_id"]
+                playerProfIcon = ProfessionsIDToIcon[AstronaXDB[player]["profession_2_id"]]
+                message = "Profession2 Rank "..playerProfId.." Name: "..name.."("..rank.."/"..maxRank..")"
+                DEFAULT_CHAT_FRAME:AddMessage(message)
+              end
+            end
+      end
+    end
+end
+
 function AstronaX:MERCHANT_CLOSED()
 	self:OnTextUpdate()
 end
@@ -1246,6 +1379,12 @@ function AstronaX:PLAYER_ENTERING_WORLD()
     self:GetPlayerXPStatus()
   end
   self:GetRaidBlocks()
+  self:GetDailyStatus()
+  self:UpdateWeekly()
+end
+
+function AstronaX:SKILL_LINES_CHANGED()
+  self:CheckProfessions()
 end
 
 function AstronaX:PLAYER_EQUIPMENT_CHANGED()
@@ -2640,10 +2779,19 @@ function AstronaX:OnTooltipUpdate()
             talents_specs = talents_specs.."|T"..unknownSpecIcon..":16|t "
           end
 
+          local professions = ""
+          if v["profession_1_id"] then
+            professions = "|T"..ProfessionsIDToIcon[v["profession_1_id"]]..":16|t ("..v["profession_1_rank"].."/"..v["profession_1_max"]..")"
+          end
+
+          if v["profession_2_id"] then
+            professions = professions.." / |T"..ProfessionsIDToIcon[v["profession_2_id"]]..":16|t ("..v["profession_2_rank"].."/"..v["profession_2_max"]..")"
+          end
+
           local armor_text = self:GetPercentageTextColor(tonumber(v["armor"]))..v["armor"]..yellow.." %"
 
           local cols = {}
-          cols['text'] = talents_specs.." "..GetClassColor(v["class"])..db_player
+          cols['text'] = talents_specs.." "..professions.." "..GetClassColor(v["class"])..db_player
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_gearscore"], "|cff"..GetGearscoreColored(v["gearscore"]))
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_repair"], armor_text)
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_264"], color_264..v[selectionIds[1]])
