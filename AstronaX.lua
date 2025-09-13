@@ -1166,10 +1166,15 @@ function AstronaX:CONFIRM_DISENCHANT_ROLL(rollID, rollType)
 end
 
 function AstronaX:GUILDBANKFRAME_OPENED()
-  if (AstronaXDB[player]["abm"] == 1 or AstronaXDB[player]["abml"] == 1) and AstronaXDB[player]["abmv"] > 0 then
+  local abm  = AstronaXDB[player] and AstronaXDB[player]["abm"]  or 0
+  local abml = AstronaXDB[player] and AstronaXDB[player]["abml"] or 0
+  local abmv = AstronaXDB[player] and AstronaXDB[player]["abmv"] or 0
+
+  if (abm == 1 or abml == 1) and abmv > 0 then
     self:UpdateMoney()
   end
 end
+
 
 function AstronaX:LFG_PROPOSAL_SHOW()
   PlaySoundFileAstronax("Sound\\Interface\\levelup2.wav");	-- IGNORES VOLUME
