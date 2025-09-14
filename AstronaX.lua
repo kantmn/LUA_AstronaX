@@ -1054,6 +1054,7 @@ function AstronaX:OnEnable()
 	self:RegisterEvent("GUILDBANKFRAME_OPENED")
   self:RegisterEvent("LFG_PROPOSAL_SHOW")
   self:RegisterEvent("MAIL_INBOX_UPDATE")
+  self:RegisterEvent("MERCHANT_UPDATE")
   self:RegisterEvent("MERCHANT_SHOW")
   self:RegisterEvent("MERCHANT_CLOSED")
 	self:RegisterEvent("PARTY_INVITE_REQUEST")
@@ -1194,6 +1195,10 @@ function AstronaX:START_LOOT_ROLL(rollID)
   if AstronaXDB[player]["arol"] == 1 then
     self:AutoRollOnLoot(rollID)
   end
+end
+
+function AstronaX:MERCHANT_UPDATE()
+  self:OnTextUpdate()
 end
 
 function AstronaX:CHAT_MSG_CHANNEL(msg, author, _, _, _, _, _, _, channel_name, _, _)
@@ -1789,7 +1794,6 @@ function AstronaX:AutoTradeEmblems()
     end
   end
   self:OnTextUpdate()
-  self:OnTooltipUpdate()
 end
 
 function AstronaX:TradeEmblems(loop, x, i)
