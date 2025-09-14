@@ -64,6 +64,12 @@ local reputation_colors = {
 "|cff9400d4"    -- 1000   Exalted     - Purple
 }
 
+local factionIcon = {
+  ["Unknown"] = "inv_bannerpvp_03",
+  ["Alliance"] = "inv_bannerpvp_02",
+  ["Horde"] = "inv_bannerpvp_01"
+}
+
 local selectionIds = {
 	49426,	-- frost
 	47241,	-- triumph
@@ -1316,7 +1322,6 @@ function AstronaX:CheckProfessions()
                 AstronaXDB[player]["profession_1_max"] = maxRank
                 playerProfId = AstronaXDB[player]["profession_1_id"]
                 playerProfIcon = ProfessionsIDToIcon[AstronaXDB[player]["profession_1_id"]]
-                message = "Profession1 Rank "..playerProfId.." Name: "..name.."("..rank.."/"..maxRank..")"
               end
 
               if AstronaXDB[player]["profession_2_rank"] ~= rank and AstronaXDB[player]["profession_2_id"] == ProfessionsNamesToID[name] then
@@ -1324,8 +1329,6 @@ function AstronaX:CheckProfessions()
                 AstronaXDB[player]["profession_2_max"] = maxRank
                 playerProfId = AstronaXDB[player]["profession_2_id"]
                 playerProfIcon = ProfessionsIDToIcon[AstronaXDB[player]["profession_2_id"]]
-                message = "Profession2 Rank "..playerProfId.." Name: "..name.."("..rank.."/"..maxRank..")"
-                DEFAULT_CHAT_FRAME:AddMessage(message)
               end
             end
       end
@@ -1381,6 +1384,8 @@ function AstronaX:PLAYER_ENTERING_WORLD()
   self:GetRaidBlocks()
   self:GetDailyStatus()
   self:UpdateWeekly()
+  self:UpdateFaction()
+  self:OnTextUpdate()
 end
 
 function AstronaX:SKILL_LINES_CHANGED()
@@ -1546,6 +1551,9 @@ function AstronaX:ZONE_CHANGED_NEW_AREA()
   self:UpdateTalents()
 	self:OnTextUpdate()
 end
+
+-- @todo event OnTextUpdate for trade complete while still in vendor view
+
 ------------------------------------------------------------------------------------------------------------------------------
 function AstronaX:AcceptChatInvites(msg, target)
   if (string.match(msg, '%d.%dk') or string.match(msg, '%d%d%d%dgs') or msg == "+" or msg == "inv") and target ~= player then  -- matched 5.5k z.b.
@@ -1554,6 +1562,11 @@ function AstronaX:AcceptChatInvites(msg, target)
   elseif target ~= pending_inviter then
     pending_inviter = nil
   end
+end
+
+function AstronaX:UpdateFaction()
+  local factionToken, _ = UnitFactionGroup("player")
+  AstronaXDB[player]["faction"] = factionToken
 end
 
 function AstronaX:AcceptFriendInvites(unit)
@@ -1770,12 +1783,13 @@ function AstronaX:AutoTradeEmblems()
       local emblemcountModulo = math.fmod(GetItemCount(selectionIds[x]),10)
       local tradeammount = GetItemCount(selectionIds[x]) - emblemcountModulo
       local loop = tradeammount / 10
-
       self:TradeEmblems(loop, x, 2)
       self:TradeEmblems(loop, x, 3)
       self:TradeEmblems(loop, x, 1)
     end
   end
+  self:OnTextUpdate()
+  self:OnTooltipUpdate()
 end
 
 function AstronaX:TradeEmblems(loop, x, i)
@@ -2700,6 +2714,8 @@ function AstronaX:OnTooltipUpdate()
 
       local headers = {}
       headers['text'] = ""
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_gearscore"], "|TInterface\\Icons\\ability_druid_naturalperfection:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_gearscore"], "|TInterface\\Icons\\inv_tradeskillitem_02:16|t")
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_gearscore"], "|TInterface\\Icons\\Ability_warrior_defensivestance:16|t")
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_repair"], "|TInterface\\Icons\\trade_blacksmithing:16|t")
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_264"], "|TInterface\\Icons\\Inv_misc_frostemblem_01:16|t")
@@ -2781,17 +2797,29 @@ function AstronaX:OnTooltipUpdate()
 
           local professions = ""
           if v["profession_1_id"] then
-            professions = "|T"..ProfessionsIDToIcon[v["profession_1_id"]]..":16|t ("..v["profession_1_rank"].."/"..v["profession_1_max"]..")"
+            professions = professions.."|T"..ProfessionsIDToIcon[v["profession_1_id"]]..":16|t ("..v["profession_1_rank"].."/"..v["profession_1_max"]..")"
+          else
+            professions = professions.."|T"..unknownSpecIcon..":16|t"
           end
 
           if v["profession_2_id"] then
             professions = professions.." / |T"..ProfessionsIDToIcon[v["profession_2_id"]]..":16|t ("..v["profession_2_rank"].."/"..v["profession_2_max"]..")"
+          else
+            professions = professions.." / |T"..unknownSpecIcon..":16|t"
           end
+
+          if( v["faction"] == nil ) then
+            v["faction"] = "Unknown"
+          end
+
+          local factionIcon = "|TInterface\\Icons\\"..factionIcon[v["faction"]]..":16|t"
 
           local armor_text = self:GetPercentageTextColor(tonumber(v["armor"]))..v["armor"]..yellow.." %"
 
           local cols = {}
-          cols['text'] = talents_specs.." "..professions.." "..GetClassColor(v["class"])..db_player
+          cols['text'] = factionIcon.." "..GetClassColor(v["class"])..db_player
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_gearscore"], talents_specs)
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_gearscore"], professions)
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_gearscore"], "|cff"..GetGearscoreColored(v["gearscore"]))
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_repair"], armor_text)
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_emblem_264"], color_264..v[selectionIds[1]])
@@ -2812,6 +2840,7 @@ function AstronaX:OnTooltipUpdate()
     if AstronaXDB[player]["tooltip_instancelocks"] == 1 then
       local headers = {}
       headers['text'] = ""
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_dailyweekly"], "|TInterface\\Icons\\ability_druid_naturalperfection:16|t")
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_dailyweekly"], "|TInterface\\Icons\\Inv_misc_frostemblem_01:20|t|n2x / 5x")
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_pvpweekly"], "|TInterface\\Icons\\achievement_win_wintergrasp:20|t|nPvP")
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_ak"], "|TInterface\\Icons\\inv_essenceofwintergrasp:20|t|nAK")
@@ -2826,6 +2855,7 @@ function AstronaX:OnTooltipUpdate()
 
       cat = Tablet:AddCategory('columns', GetArraySize(headers)+1)
       cat:AddLine(headers)
+      cat:AddLine('text', " ")  -- adds an empty line
 
       for i, db_player in pairs(sorted_table) do
         local _, v = sorted_table[i], AstronaXDB[ sorted_table[i] ]
@@ -2900,9 +2930,11 @@ function AstronaX:OnTooltipUpdate()
           halion = halion.." / "
           halion = halion..self:GetRaidstatusColor(v["Das Rubinsanktum;25;2"], v["ilvl_minimum"], 284, 25)
 
+          local factionIcon = "|TInterface\\Icons\\"..factionIcon[v["faction"]]..":16|t"
+          
           local cols = {}
-          cols['text'] = talents_specs..GetClassColor(v["class"])..db_player
-
+          cols['text'] = factionIcon.." "..GetClassColor(v["class"])..db_player
+          self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_gearscore"], talents_specs)
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_dailyweekly"], dailyheroic..yellow.." / "..weeklyraidquest)
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_pvpweekly"], weeklypvpquest)
           self:create_tooltip_col(cols, AstronaXDB[player]["tooltip_ak"], ak)
