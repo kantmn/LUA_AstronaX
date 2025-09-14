@@ -365,6 +365,8 @@ local defaults = {
 local function InitAstronaX()
     if not AstronaXDB then
         AstronaXDB = {}
+        AstronaxDB.farclip = 4000
+        AstronaxDB.farclip_toggle = 0
     end
     for k,v in pairs(defaults) do
         if AstronaXDB[k] == nil then
