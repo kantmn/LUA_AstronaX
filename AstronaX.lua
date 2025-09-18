@@ -959,7 +959,9 @@ function SlashCmdList.AstronaX(_cmd)
     displayHelp = true
   end
   ---------------------------------------------------------------
-  if(cmd == "aifk") then
+  if( cmd == "pull")then
+    AstronaX:SetDBMTimer()
+  elseif(cmd == "aifk") then
     if( parameter ~= nil and string.match(parameter, '%a') and string.len(parameter) >= 2) then
       AstronaXDB.auto_inv_whisper_text = parameter;
       print(GetAddonColor()..l[cmd].." "..l["was %s and was set to %s."]:format(GetAddonHighlight()..l["activated"]..GetAddonColor(), GetAddonHighlight()..parameter..GetAddonColor()));
@@ -1012,12 +1014,12 @@ function SlashCmdList.AstronaX(_cmd)
     print(GetAddonColor().."Check Weekly PVP Quest")
     print(GetAddonColor().."Check Weekly Raid Status")
     print(GetAddonColor().."Click on FuBar or Minimap button to toggle Addon settings")
-    print(addon_warning.."---------------------------------------------")
+    print(GetAddonWarning().."---------------------------------------------")
     print(GetAddonHighlight()..l["Displaying available commands:"])
     for k in pairs(function_array) do
       print(GetAddonColor().." /ax "..GetAddonHighlight()..function_array[k]..GetAddonColor()..spacertab..l[function_array[k]])
     end
-    print(addon_warning.."---------------------------------------------")
+    print(GetAddonWarning().."---------------------------------------------")
   end
 end
 
@@ -2235,6 +2237,16 @@ function AstronaX:GetUnitAuraUpdates()
       self:AlertOnMissingBuff("WeaponBuff","Sound\\Interface\\Sound\\Interface\\ReadyCheck.wav")
     end
 
+  elseif isInCombat() and isInGroup() and GetClassName() == "DEATHKNIGHT" then
+    local b = select(3, GetTalentTabInfo(1))  -- Blood
+    local f = select(3, GetTalentTabInfo(2))  -- Frost
+    local u = select(3, GetTalentTabInfo(3))  -- Unholy
+    if u > b and u > f then
+       --Main spec is Unholy ("..u.." points)
+      self:GetSpellUponTarget("Knochenschild","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
+    end
+    self:GetSpellUponTarget("Horn","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
+
   elseif isInCombat() and isInGroup() and GetClassName() == "WARRIOR" then
     if self:CheckIfSpellIsPresent("Segen der Macht", "player") == false then
       self:GetSpellUponTarget("ruf","player","Sound\\Effects\\DeathImpacts\\InWater\\mDeathImpactSmallWaterA.wav")
@@ -2645,7 +2657,7 @@ function AstronaX:OnTextUpdate()
     text = text..count_timer_1kw.."|r"..spacertab
   end
   if AstronaXDB[player]["bar_ho"] == 1 then
-    text = text.."|TInterface\\Icons\\Inv_bannerpvp_01:12|t |cffff0000"..math.floor(count_pvphonor /1000).." / 75 k|r"..spacertab
+    text = text.."|TInterface\\Icons\\"..factionIcon[AstronaXDB[player]["faction"]]..":12|t |cffff0000"..math.floor(count_pvphonor /1000).."k |r"..spacertab
   end
   if AstronaXDB[player]["bar_og"] == 1 then
     local fulldisplay = false
@@ -2720,18 +2732,18 @@ function AstronaX:OnTooltipUpdate()
 
       local headers = {}
       headers['text'] = ""
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_gearscore"], "|TInterface\\Icons\\ability_druid_naturalperfection:16|t")
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_gearscore"], "|TInterface\\Icons\\inv_tradeskillitem_02:16|t")
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_gearscore"], "|TInterface\\Icons\\Ability_warrior_defensivestance:16|t")
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_repair"], "|TInterface\\Icons\\trade_blacksmithing:16|t")
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_264"], "|TInterface\\Icons\\Inv_misc_frostemblem_01:16|t")
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_232"], "|TInterface\\Icons\\Spell_holy_summonchampion:16|t")
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_226"], "|TInterface\\Icons\\spell_holy_championsgrace:16|t")
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_213"], "|TInterface\\Icons\\spell_holy_proclaimchampion_02:16|t")
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_200"], "|TInterface\\Icons\\spell_holy_proclaimchampion:16|t")
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_1kw"], "|TInterface\\Icons\\inv_misc_platnumdisks:16|t")
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_honor"], "|TInterface\\Icons\\inv_bannerpvp_01:16|t")
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_money"], "|TInterface\\Icons\\inv_misc_coin_01:16|t"..format_money(total_money, false, false, true))
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_gearscore"], "|TInterface\\Icons\\ability_druid_naturalperfection:16:16:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_gearscore"], "|TInterface\\Icons\\inv_tradeskillitem_02:16:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_gearscore"], "|TInterface\\Icons\\Ability_warrior_defensivestance:16:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_repair"], "|TInterface\\Icons\\trade_blacksmithing:16:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_264"], "|TInterface\\Icons\\Inv_misc_frostemblem_01:16:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_232"], "|TInterface\\Icons\\Spell_holy_summonchampion:16:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_226"], "|TInterface\\Icons\\spell_holy_championsgrace:16:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_213"], "|TInterface\\Icons\\spell_holy_proclaimchampion_02:16:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_200"], "|TInterface\\Icons\\spell_holy_proclaimchampion:16:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_emblem_1kw"], "|TInterface\\Icons\\inv_misc_platnumdisks:16:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_honor"], "|TInterface\\Icons\\"..factionIcon[AstronaXDB[player]["faction"]]..":16:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_money"], "|TInterface\\Icons\\inv_misc_coin_01:16:16|t"..format_money(total_money, false, false, true))
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_title"], l["Title"])
 
       cat = Tablet:AddCategory('columns', GetArraySize(headers)+1)
@@ -2758,6 +2770,8 @@ function AstronaX:OnTooltipUpdate()
           if v["title"] ~= nil then
             v["title"] = ""
           end
+
+          local factionIcon = "|TInterface\\Icons\\"..factionIcon[v["faction"]]..":16:16|t"
 
           local color_stein = "|cffCCEEFF"
           if v[selectionIds[6]] < 30 then color_stein = "|cff445566" end
@@ -2790,35 +2804,33 @@ function AstronaX:OnTooltipUpdate()
 
           local talents_specs = ""
           if v["talentspec_primary"] then
-            talents_specs = talents_specs.."|T"..v["talentspec_primary"]..":16|t "
+            talents_specs = talents_specs.."|T"..v["talentspec_primary"]..":16:16|t "
           else
-            talents_specs = talents_specs.."|T"..unknownSpecIcon..":16|t "
+            talents_specs = talents_specs.."|T"..unknownSpecIcon..":16:16|t "
           end
 
           if v["talentspec_secondary"] then
-            talents_specs = talents_specs.."|T"..v["talentspec_secondary"]..":16|t "
+            talents_specs = talents_specs.."|T"..v["talentspec_secondary"]..":16:16|t "
           else
-            talents_specs = talents_specs.."|T"..unknownSpecIcon..":16|t "
+            talents_specs = talents_specs.."|T"..unknownSpecIcon..":16:16|t "
           end
 
           local professions = ""
           if v["profession_1_id"] then
-            professions = professions.."|T"..ProfessionsIDToIcon[v["profession_1_id"]]..":16|t ("..v["profession_1_rank"].."/"..v["profession_1_max"]..")"
+            professions = professions.."|T"..ProfessionsIDToIcon[v["profession_1_id"]]..":16:16|t ("..v["profession_1_rank"].."/"..v["profession_1_max"]..")"
           else
-            professions = professions.."|T"..unknownSpecIcon..":16|t"
+            professions = professions.."|T"..unknownSpecIcon..":16:16|t"
           end
 
           if v["profession_2_id"] then
-            professions = professions.." / |T"..ProfessionsIDToIcon[v["profession_2_id"]]..":16|t ("..v["profession_2_rank"].."/"..v["profession_2_max"]..")"
+            professions = professions.." / |T"..ProfessionsIDToIcon[v["profession_2_id"]]..":16:16|t ("..v["profession_2_rank"].."/"..v["profession_2_max"]..")"
           else
-            professions = professions.." / |T"..unknownSpecIcon..":16|t"
+            professions = professions.." / |T"..unknownSpecIcon..":16:16|t"
           end
 
           if( v["faction"] == nil ) then
             v["faction"] = "Unknown"
           end
-
-          local factionIcon = "|TInterface\\Icons\\"..factionIcon[v["faction"]]..":16|t"
 
           local armor_text = self:GetPercentageTextColor(tonumber(v["armor"]))..v["armor"]..yellow.." %"
 
@@ -2846,7 +2858,7 @@ function AstronaX:OnTooltipUpdate()
     if AstronaXDB[player]["tooltip_instancelocks"] == 1 then
       local headers = {}
       headers['text'] = ""
-      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_dailyweekly"], "|TInterface\\Icons\\ability_druid_naturalperfection:16|t")
+      self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_dailyweekly"], "|TInterface\\Icons\\ability_druid_naturalperfection:16:16|t")
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_dailyweekly"], "|TInterface\\Icons\\Inv_misc_frostemblem_01:20|t|n2x / 5x")
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_pvpweekly"], "|TInterface\\Icons\\achievement_win_wintergrasp:20|t|nPvP")
       self:create_tooltip_col(headers, AstronaXDB[player]["tooltip_ak"], "|TInterface\\Icons\\inv_essenceofwintergrasp:20|t|nAK")
@@ -2889,15 +2901,15 @@ function AstronaX:OnTooltipUpdate()
 
           local talents_specs = ""
           if v["talentspec_primary"] then
-            talents_specs = talents_specs.."|T"..v["talentspec_primary"]..":16|t "
+            talents_specs = talents_specs.."|T"..v["talentspec_primary"]..":16:16|t "
           else
-            talents_specs = talents_specs.."|T"..unknownSpecIcon..":16|t "
+            talents_specs = talents_specs.."|T"..unknownSpecIcon..":16:16|t "
           end
 
           if v["talentspec_secondary"] then
-            talents_specs = talents_specs.."|T"..v["talentspec_secondary"]..":16|t "
+            talents_specs = talents_specs.."|T"..v["talentspec_secondary"]..":16:16|t "
           else
-            talents_specs = talents_specs.."|T"..unknownSpecIcon..":16|t "
+            talents_specs = talents_specs.."|T"..unknownSpecIcon..":16:16|t "
           end
 
           local ak = self:GetRaidstatusColor(v["Archavons Kammer;10;1"], v["ilvl_minimum"], 251, 10)
@@ -2936,7 +2948,7 @@ function AstronaX:OnTooltipUpdate()
           halion = halion.." / "
           halion = halion..self:GetRaidstatusColor(v["Das Rubinsanktum;25;2"], v["ilvl_minimum"], 284, 25)
 
-          local factionIcon = "|TInterface\\Icons\\"..factionIcon[v["faction"]]..":16|t"
+          local factionIcon = "|TInterface\\Icons\\"..factionIcon[v["faction"]]..":16:16|t"
           
           local cols = {}
           cols['text'] = factionIcon.." "..GetClassColor(v["class"])..db_player
@@ -3133,7 +3145,7 @@ function AstronaX:SetDBMTimer()
 
     local slider_time = AceGUI:Create("Slider")
     slider_time:SetLabel("sec")
-    slider_time:SetSliderValues(0, 60, 5)
+    slider_time:SetSliderValues(0, 300, 5)
     slider_time:SetValue(0)
     slider_time:SetWidth(300)
     slider_time:SetValue(15)
@@ -3143,7 +3155,30 @@ function AstronaX:SetDBMTimer()
     button_pause:SetWidth(120)
     button_pause:SetCallback("OnClick",
       function()
-        RunSlashCmd("/dbm break "..slider_time:GetValue())
+        local secs=slider_time:GetValue()
+        local announce = {300, 240, 180, 120, 60, 45, 30, 15, 10, 7 ,5, 3, 2, 1}        -- times (seconds left) you care about
+        local want = {}                      -- turn it into a lookup set
+        PlaySound("AlarmClockWarning2")
+        for _, v in ipairs(announce) do want[v] = true end
+
+        for i = 0, secs do                   -- count up or down as you prefer
+            local left = secs - i
+            if want[left] then
+                RunSlashCmd("/in "..i.." /rw Pause ends in "..left.."s")
+            end
+        end 
+
+        local start = GetTime()
+        local f = CreateFrame("Frame")
+        f:SetScript("OnUpdate", function(self, elapsed)
+            local left = secs - (GetTime() - start)
+            if left <= 0 then
+                SendChatMessage("Pause now!", "RAID_WARNING")
+                PlaySound("RaidWarning")
+                PlaySound("PVPVictoryAlliance")
+                self:SetScript("OnUpdate", nil)  -- stop the timer
+            end
+        end)
       end)
 
     local button_pull = AceGUI:Create("Button")
@@ -3151,7 +3186,34 @@ function AstronaX:SetDBMTimer()
     button_pull:SetWidth(120)
     button_pull:SetCallback("OnClick",
       function()
-        RunSlashCmd("/dbm pull "..slider_time:GetValue())
+        local secs=slider_time:GetValue()
+        local announce = {300, 240, 180, 120, 60, 45, 30, 15, 10, 7 ,5, 3, 2, 1}        -- times (seconds left) you care about
+        local want = {}                      -- turn it into a lookup set
+        PlaySound("AlarmClockWarning2")
+        for _, v in ipairs(announce) do want[v] = true end
+
+        for i = 0, secs do                   -- count up or down as you prefer
+            local left = secs - i
+            if(left == 15) then
+                PlaySound("BE_ArcaneBomb_Open")
+            end
+            if want[left] then
+                RunSlashCmd("/in "..i.." /rw Pull in "..left.."s")
+            end
+        end 
+
+        local start = GetTime()
+        local f = CreateFrame("Frame")
+
+        f:SetScript("OnUpdate", function(self, elapsed)
+            local left = secs - (GetTime() - start)
+            if left <= 0 then
+                SendChatMessage("Pull now!", "RAID_WARNING")
+                PlaySound("RaidWarning")
+                PlaySound("scourge_horn")
+                self:SetScript("OnUpdate", nil)  -- stop the timer
+            end
+        end)
       end)
 
     local button_readycheck = AceGUI:Create("Button")

@@ -203,7 +203,7 @@ l:RegisterTranslations("deDE", function() return {
    ["Search"] = "Suchen",
    ["Trade Emblems"] = "Tausche Embleme",
    ["%s used %s to interupt %s by %s"] = "%s benutzte %s um %s von %s zu unterbrechen",
-   ["SetDBMTimer"] = "Stelle DBM timer",
+   ["SetDBMTimer"] = "Stelle timer",
    ["Ok"] = "Okay",
    ["Pause"] = "Pause",
    ["Pull"] = "Angriff",
