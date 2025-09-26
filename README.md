@@ -20,6 +20,7 @@ Screenshot Section
 <img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_Raid_ApplicationWhisper.png">
 <img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_Raid_MemberSearch_Page1.png">
 <img src="https://github.com/kantmn/LUA_AstronaX/blob/master/Screenshots/AstronaX_Raid_MemberSearch_Page2.png">
+<img width="394" height="214" alt="image" src="https://github.com/user-attachments/assets/ec413157-830b-4701-80ec-ca4a9970ab65" />
 
 
 
