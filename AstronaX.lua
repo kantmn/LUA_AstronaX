@@ -3192,6 +3192,7 @@ function AstronaX:SetDBMTimer()
         PlaySound("AlarmClockWarning2")
         for _, v in ipairs(announce) do want[v] = true end
 
+        RunSlashCmd("/rw Pulltimer set for "..secs.."s (created by "..UnitName("player")..")")
         for i = 0, secs do                   -- count up or down as you prefer
             local left = secs - i
             if(left == 15) then
