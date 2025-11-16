@@ -58,7 +58,7 @@ jobs:
         with:
           sarif_file: results.sarif
   release:
-    runs-on: ["self-hosted", "arm64"]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
